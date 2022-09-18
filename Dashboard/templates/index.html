@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}Home Page{% endblock %}
+
+{% block head %}
+<script type="text/javascript" src="{{ url_for('static', filename='js/2.1.3_jquery.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/popup_js.js') }}"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/popup.css') }}">
+<script>
+    var r = document.querySelector(':root');
+    var w = window.innerWidth;
+    var h = window.innerHeight;
+    var he = (h-64)/2;
+    console.log(he + 'px');
+    r.style.setProperty('--base', he + 'px');
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <script type="text/javascript">$(function() { $("#onbutton").click(function (event) { $.getJSON('/turnon', { },
+        function(data) { }); return false; }); });
+    </script>
+
+	<button class="button button1" id="onbutton" onclick="timeFunction1()"><div class="popup1">
+    <span class="popuptext1" id="myPopup1">Turned ON</span>
+    </div><div style="font-size: 40px;">Turn on</div></button>
+
+    <iframe id="webframe" class="home-message" src="https://www.metacafebliss.com" title="Iframe Example"></iframe>
+    <script type="text/javascript"> $(function() { $("#offbutton").click(function (event) {$.getJSON('/turnoff', { },
+        function(data) { }); return false; }); });
+    </script>
+
+    <button class="button button2" id="offbutton" onclick="timeFunction2()"><div class="popup2">
+    <span class="popuptext2" id="myPopup2">Turned OFF</span>
+    </div><div style="font-size: 40px;">Turn off</div></button>
+
+    <script type=text/javascript> $(function() { $("#timerButton").click(function (event) {
+    timeFunction4();
+    $.ajax({
+      type: "POST",
+      url: "/",
+      data: JSON.stringify({"timerButton":"yes"}),
+      contentType: "application/json",
+      dataType: 'json',
+      success: function(result) {
+        console.log("Result:");
+        console.log(result);
+        $("#timerButton").attr("disabled", false);
+        }});
+        document.getElementById("timerButton").disabled = true;
+        console.log("btn disabled"); return false; }); });
+    </script>
+
+    <button class="button button4" id="timerButton"><div class="popup4">
+    <span class="popuptext4" id="myPopup4">Timer Disabled</span>
+    </div><div style="font-size: 40px;">Timer ON/OFF</div></button>
+
+    <script type=text/javascript> $(function() { $("#alarmButton").click(function (event) {
+
+    $.ajax({
+      type: "POST",
+      url: "/",
+      data: JSON.stringify({"alarmButton":"yes"}),
+      contentType: "application/json",
+      dataType: 'json',
+      success: function(result) {
+
+        console.log("Result:");
+        console.log(result);
+        $("#alarmButton").attr("disabled", false);
+        var x = document.getElementById("myPopup5");
+            if (x.innerHTML === "Alarm Enabled") {
+                x.innerHTML = "Alarm Disabled";
+                } else {
+                    x.innerHTML = "Alarm Enabled";
+                }
+        var popup5 = document.getElementById("myPopup5");
+        popup5.classList.toggle("show5");
+
+        }});
+
+
+        document.getElementById("alarmButton").disabled = true;
+        var popup5 = document.getElementById("myPopup5");
+        popup5.classList.toggle("show5");
+        console.log("btn disabled"); return false; }); });
+    </script>
+
+    <button class="button button5" id="alarmButton"><div class="popup5">
+    <span class="popuptext5" id="myPopup5">Alarm Enabled</span>
+    </div><div style="font-size: 40px;">Alarm <br>ON/OFF</div></button>
+
+
+    <button class="button button6" onclick="location.href='{{ url_for('settings') }}';"><div style="font-size: 40px;">Extra<br>Settings</div></button>
+    <button class="button button7" onclick="location.href='{{ url_for('timer_settings') }}';">Timer Settings</button>
+    <button class="button button8" onclick="location.href='{{ url_for('alarm_settings') }}';">Alarm Settings</button>
+    <button class="button button9" onclick="location.href='{{ url_for('wifi_back') }}';">Wifi</button>
+</div>
+
+<script>
+        window.setInterval(function() {
+            reloadIFrame()
+        }, 20000);
+
+        function reloadIFrame() {
+            console.log('reloading..');
+            document.getElementById('webframe').src += '';
+        }
+</script>
+
+{% endblock %}

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>system reboot</title>
+</head>
+<body>
+<script>
+  var timeleft = 14;
+  var downloadTimer = setInterval(function(){
+    if(timeleft <= 0){
+      clearInterval(downloadTimer);
+      document.getElementById("countdown").innerHTML = "Thank You";
+    } else {
+      document.getElementById("countdown").innerHTML = "The system will reboot in " + timeleft + " seconds";
+    }
+    timeleft -= 1;
+  }, 1000);
+</script>
+<h1 style="color: black;"><div id="countdown"></div></h1>
+<h1>{{ response }}</h1>
+</body>
+</html>
