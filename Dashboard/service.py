@@ -1,8 +1,4 @@
-import time
-import subprocess
-import Dashboard
-from Dashboard import threading, pyTasks, os, requests, json, date, subprocess, render_template, jsonify, \
-    url_for, redirect
+from Dashboard import threading, time, pyTasks, os, requests, json, subprocess, jsonify
 
 #  GLOBALS
 t1 = threading.Thread  # alarm thread
@@ -30,7 +26,7 @@ WEB_LATEST_UPDATE = None
 ##### Extra variables #######
 ONCE_INDEX = 0
 POWER_GEN_STATE = 0
-MODE_RUNNING = False
+MODE_PROCESS_IS_RUNNING = False
 MODE_STATE = None
 auth_key = 'klshdfgkjh(*&89y(*YF^*&%&RIUHEFIH986893yh4rjfskjdhffhgajkdfni&*%&^^IUJhknfga'
 
@@ -57,20 +53,19 @@ def start_index():
             if check_for_auth():  # comes first from the profile  # if profile says 0
                 if WAVEFORM_LOADED == 0:
                     send_statistic('ACTIVE_UPDATE', 'Signal was not loaded, loading...')
-                    Command_Controller_Signal_Generator("LOAD")
+                    Signal_Generator_Controller("LOAD")
                 if update_check():  # if update do update stuff
                     return "Update"
-                ONCE_INDEX = "1"  # remember we have already loaded all we need
-                t4 = threading.Thread(target=authentication_thread)  # start authentication loop thread
-                t4.start()
+                threading.Thread(target=authentication_thread).start()  # start authentication loop thread
                 power_supply_amp_("ON")  # turn amp on when we authenticate
                 if SIGLENT == "1":  # if siglent on then pass powering signal generator
-                    pass
+                    Signal_Generator_Controller("SIGLENT_POWER_ON")
                 else:
-                    Command_Controller_Signal_Generator("MHS_POWER_ON")  # turn on signal generator
+                    Signal_Generator_Controller("MHS_POWER_ON")  # turn on signal generator
+                ONCE_INDEX = "1"  # remember we have already loaded all we need
                 return "Authenticated"
             else:
-                Command_Controller_Signal_Generator("UNLOAD")  # signal generator has to be on
+                Signal_Generator_Controller("UNLOAD")  # signal generator has to be on
                 restart_15()  # reboot in 15 minutes
                 return "Not-Authenticated"
                 # It will cycle so best to turn itself off than restart
@@ -86,36 +81,36 @@ def start_index():
 
 
 def MODE(mode):
-    global SIGLENT, ON_start, ON_end, MODE_RUNNING, MODE_STATE
+    global SIGLENT, ON_start, ON_end, MODE_PROCESS_IS_RUNNING, MODE_STATE
     if mode == "ON":
-        if MODE_RUNNING:  # does this eliminate the need for ajax
+        if MODE_PROCESS_IS_RUNNING:  # does this eliminate the need for ajax
             return
         if MODE_STATE == "ON":
             return
-        MODE_RUNNING = True
+        MODE_PROCESS_IS_RUNNING = True
         MODE_STATE = "ON"
         send_statistic('TOTAL_TIMES_USED', "1")
         ON_start = time.time()
         if SIGLENT == "1":  # if siglent on then pass siglent signal
-            Command_Controller_Signal_Generator("SIGLENT_ON")
+            Signal_Generator_Controller("SIGLENT_ON")
         else:
-            Command_Controller_Signal_Generator("MHS_ON")  # pass signal generator
+            Signal_Generator_Controller("MHS_ON")  # pass signal generator
         speaker_protection_("ON")
-        MODE_RUNNING = False
+        MODE_PROCESS_IS_RUNNING = False
     elif mode == "OFF":
-        if MODE_RUNNING:
+        if MODE_PROCESS_IS_RUNNING:
             return
-        MODE_RUNNING = True
+        MODE_PROCESS_IS_RUNNING = True
         ON_end = time.time()
         run_time = float((ON_end - ON_start) / 60)
         send_statistic('MINUTES', run_time)
         print(run_time)
         speaker_protection_("OFF")
         if SIGLENT == "1":  # if siglent on then pass siglent signal off
-            Command_Controller_Signal_Generator("SIGLENT_OFF")
+            Signal_Generator_Controller("SIGLENT_OFF")
         else:
-            Command_Controller_Signal_Generator("MHS_OFF")  # pass signal generator off
-        MODE_RUNNING = False
+            Signal_Generator_Controller("MHS_OFF")  # pass signal generator off
+        MODE_PROCESS_IS_RUNNING = False
         MODE_STATE = "OFF"
 
 
@@ -127,7 +122,7 @@ def power_supply_amp_(mode):
         os.system('sudo gpioset 1 91=1')
 
 
-def Command_Controller_Signal_Generator(mode):
+def Signal_Generator_Controller(mode):
     global POWER_GEN_STATE, HOME_PATH, WAVEFORM_LOADED
     # Relay HIGH is off LOW is on
     if mode == "MHS_POWER_ON":
@@ -148,11 +143,17 @@ def Command_Controller_Signal_Generator(mode):
         pass
         time.sleep(.4)
     elif mode == "SIGLENT_OFF":
+        pass
+        time.sleep(.4)
+    elif mode == "SIGLENT_POWER_ON":
+        pass  # most definitely turning on another relay for power
+        time.sleep(.4)
+    elif mode == "SIGLENT_POWER_OFF":
         pass  # can I power it on and off from ethernet?
         time.sleep(.4)
     elif mode == "LOAD":
         if POWER_GEN_STATE == "0":
-            Command_Controller_Signal_Generator("MHS_POWER_ON")
+            Signal_Generator_Controller("MHS_POWER_ON")
             time.sleep(25)
         else:
             os.system(
@@ -165,7 +166,7 @@ def Command_Controller_Signal_Generator(mode):
         print("unload " + str(WAVEFORM_LOADED))
         if WAVEFORM_LOADED == "1":
             if POWER_GEN_STATE == "0":
-                Command_Controller_Signal_Generator("MHS_POWER_ON")
+                Signal_Generator_Controller("MHS_POWER_ON")
                 time.sleep(25)
             else:
                 os.system(
@@ -193,7 +194,7 @@ def speaker_protection_(mode):
 def send_settings_on_settings_page(data):
     global timer_state, alarm_state, ON_start, ON_end, HOME_PATH, USER_NAME, PATH_TO_POST_TO, WIFI_DRIVER_NAME, \
         MY_CURRENT_VERSION, WAVEFORM_LOADED, ADMIN_EMAIL, ADMIN_PHONE, AUTHENTICATION, COMMAND, SIGLENT, FORCE_UPDATE, \
-        URL_FOR_UPDATE, WEB_LATEST_UPDATE, ONCE_INDEX, POWER_GEN_STATE, MODE_RUNNING, MODE_STATE, auth_key
+        URL_FOR_UPDATE, WEB_LATEST_UPDATE, ONCE_INDEX, POWER_GEN_STATE, MODE_PROCESS_IS_RUNNING, MODE_STATE, auth_key
     if 'troubleshoot' in data:
         message = "HOME_PATH: " + str(HOME_PATH) + " USER_NAME: " + str(USER_NAME) + " PATH_TO_POST_TO: " + str(
             PATH_TO_POST_TO) + " WIFI_DRIVER_NAME: " + str(WIFI_DRIVER_NAME) + " MY_CURRENT_VERSION: " + str(
@@ -201,7 +202,7 @@ def send_settings_on_settings_page(data):
                   " ADMIN_PHONE: " + str(ADMIN_PHONE) + " AUTHENTICATION: " + str(AUTHENTICATION) + \
                   " COMMAND: " + str(COMMAND) + " SIGLENT: " + str(SIGLENT) + " FORCE_UPDATE: " + str(FORCE_UPDATE) + \
                   " URL_FOR_UPDATE: " + str(URL_FOR_UPDATE) + " WEB_LATEST_UPDATE: " + str(WEB_LATEST_UPDATE) + \
-                  " POWER_GEN_STATE: " + str(POWER_GEN_STATE) + " MODE_RUNNING: " + str(MODE_RUNNING) + \
+                  " POWER_GEN_STATE: " + str(POWER_GEN_STATE) + " MODE_PROCESS_IS_RUNNING: " + str(MODE_PROCESS_IS_RUNNING) + \
                   " MODE_STATE: " + str(MODE_STATE) + " auth_key: " + str(auth_key)
         send_statistic('ACTIVE_UPDATE', message)
         test_string = "Path= what to send"
@@ -449,10 +450,10 @@ def BackgroundAuthCheck():
         Download_Profile()
         if check_for_auth():
             if WAVEFORM_LOADED == 0:
-                Command_Controller_Signal_Generator("LOAD")
+                Signal_Generator_Controller("LOAD")
             return True
         else:
-            Command_Controller_Signal_Generator("UNLOAD")
+            Signal_Generator_Controller("UNLOAD")
             restart_15()
             print("authentication failed")
     else:
@@ -478,7 +479,7 @@ def run_timer():
 
 
 def button_controller(data):
-    global alarm_state, timer_state, MODE_RUNNING
+    global alarm_state, timer_state, MODE_PROCESS_IS_RUNNING
     print(data)
     if "timerButton" in data:
         if timer_state == "ON":
@@ -507,7 +508,7 @@ def timer_thread(mode):
         pyTasks.timer.stop_threads = False
         t2 = threading.Thread(target=pyTasks.timer.timer_start)
         t2.start()
-        while MODE_RUNNING:
+        while MODE_PROCESS_IS_RUNNING:
             time.sleep(0.02)
         MODE("ON")
         timer_state = "ON"
@@ -519,25 +520,25 @@ def timer_thread(mode):
         t2.join()
         while t2.is_alive():
             time.sleep(0.07)  # works well but javascript front end isn't connected or aligned.
-        while MODE_RUNNING:
+        while MODE_PROCESS_IS_RUNNING:
             time.sleep(0.02)
         MODE("OFF")
         timer_state = "OFF"
 
 
 def alarm_thread(mode):
-    global t1, alarm_state, MODE_RUNNING, time_a1
+    global t1, alarm_state, MODE_PROCESS_IS_RUNNING, time_a1
     if mode == "start":
         time_a1 = time.time()
         pyTasks.alarm.stop_threads = False
         t1 = threading.Thread(target=pyTasks.alarm.alarm_start)
         t1.start()
         # turn everything off
-        while MODE_RUNNING:
+        while MODE_PROCESS_IS_RUNNING:
             time.sleep(0.02)
         MODE("OFF")
-        MODE_RUNNING = True  # stops all options running
-        Command_Controller_Signal_Generator("MHS_POWER_OFF")
+        MODE_PROCESS_IS_RUNNING = True  # stops all options running
+        Signal_Generator_Controller("MHS_POWER_OFF")
         power_supply_amp_("OFF")
         time.sleep(0.07)
         alarm_state = "ON"
@@ -550,9 +551,9 @@ def alarm_thread(mode):
         while t1.is_alive():
             time.sleep(0.07)
         power_supply_amp_("ON")
-        Command_Controller_Signal_Generator("MHS_POWER_ON")
+        Signal_Generator_Controller("MHS_POWER_ON")
         time.sleep(2)  # maybe something better
-        MODE_RUNNING = False  # allows things to run again
+        MODE_PROCESS_IS_RUNNING = False  # allows things to run again
         alarm_state = "OFF"
 
 # Notes to self:

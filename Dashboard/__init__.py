@@ -11,7 +11,6 @@ from email.mime.text import MIMEText
 import smtplib
 import flask
 from flask import Flask, render_template, request, jsonify, redirect, url_for
-
 from flask_socketio import SocketIO, send, emit
 
 app = Flask(__name__)

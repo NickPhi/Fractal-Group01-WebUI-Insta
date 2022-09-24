@@ -1,8 +1,7 @@
 import Dashboard.service
-from Dashboard import app, threading, render_template, request, url_for, redirect
+from Dashboard import app, threading, render_template, request, url_for, redirect, requests
 from Dashboard.service import start_index, send_settings_on_settings_page, plug_Wifi, plug_timer, plug_alarm, \
-    button_controller, MODE, run_timer, alarm_thread, timer_thread
-import requests
+    button_controller, MODE, alarm_thread, timer_thread
 
 
 @app.route('/', methods=['GET', 'POST'])

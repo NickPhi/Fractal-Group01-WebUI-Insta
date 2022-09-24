@@ -1,6 +1,5 @@
-from Dashboard import time, os
-from Dashboard.service import readJsonValueFromKey, MODE, MODE_RUNNING
-import datetime
+from Dashboard import time, os, datetime
+from Dashboard.service import readJsonValueFromKey, MODE, MODE_PROCESS_IS_RUNNING
 stop_threads = False
 
 
@@ -19,7 +18,7 @@ def timer_start():
         time.sleep(1)
         total_seconds -= 1
     if not stop_threads:
-        while MODE_RUNNING:
+        while MODE_PROCESS_IS_RUNNING:
             time.sleep(0.02)
         MODE("OFF")
     print("Timer Stop")
