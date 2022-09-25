@@ -296,9 +296,9 @@ def update():
     x = 0
     while True:
         test_path = HOME_PATH + prj_name + '_' + str(x)
-        answer = subprocess.check_output(['if test -d ' + test_path + '; then echo "exist"; fi '])
+        answer = subprocess.check_output('if test -d ' + test_path + '; then echo "exist"; fi ', shell=True)
         x += 1
-        if answer != "exists":
+        if not str(answer).__contains__("exists"):
             break
     NEW_PRJ_PATH = HOME_PATH + prj_name + '_' + str(x - 1)  # LATEST_USER_VERSION is a number
     write_update(URL_FOR_UPDATE, NEW_PRJ_PATH)
