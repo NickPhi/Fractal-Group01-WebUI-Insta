@@ -293,14 +293,14 @@ def update():
     global HOME_PATH, URL_FOR_UPDATE
     fragment_git = URL_FOR_UPDATE.split("/")
     prj_name = fragment_git[4]  # Assuming git URL separated 5 times by "/"
-    x = 1
+    x = 0
     while True:
         test_path = HOME_PATH + prj_name + '_' + str(x)
         answer = subprocess.check_output('if test -d ' + test_path + '; then echo "exist"; fi ', shell=True)
-        x += 1
-        if not str(answer).__contains__("exists"):
+        if not str(answer).__contains__("exist"):
             break
-    NEW_PRJ_PATH = HOME_PATH + prj_name + '_' + str(x - 1)  # LATEST_USER_VERSION is a number
+        x += 1
+    NEW_PRJ_PATH = HOME_PATH + prj_name + '_' + str(x)  # LATEST_USER_VERSION is a number
     write_update(URL_FOR_UPDATE, NEW_PRJ_PATH)
 
 
