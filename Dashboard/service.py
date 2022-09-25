@@ -293,7 +293,7 @@ def update():
     global HOME_PATH, URL_FOR_UPDATE
     fragment_git = URL_FOR_UPDATE.split("/")
     prj_name = fragment_git[4]  # Assuming git URL separated 5 times by "/"
-    x = 0
+    x = 1
     while True:
         test_path = HOME_PATH + prj_name + '_' + str(x)
         answer = subprocess.check_output('if test -d ' + test_path + '; then echo "exist"; fi ', shell=True)
@@ -310,6 +310,8 @@ def update_check():
     if FORCE_UPDATE == 1:
         print("force update")
         update()
+        #  now that updated turn force update off or infinite boot loop
+        send_statistic('force_Update', 0)
         restart_15()
         return True
     else:
