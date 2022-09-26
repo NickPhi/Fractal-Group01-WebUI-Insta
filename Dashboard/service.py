@@ -315,7 +315,10 @@ def update_check():
         restart_15()
         return True
     else:
-        if MY_CURRENT_VERSION < WEB_LATEST_UPDATE:
+        print(type(MY_CURRENT_VERSION))
+        print(WEB_LATEST_UPDATE)
+        print(type(WEB_LATEST_UPDATE))
+        if MY_CURRENT_VERSION < int(WEB_LATEST_UPDATE):
             print("new update")
             update()
             send_statistic('my_current_version', str(WEB_LATEST_UPDATE))
@@ -383,7 +386,9 @@ def Download_Profile():  # Runs on loop (authentication-thread)
     WEB_LATEST_UPDATE = profileData['version']
     ADMIN_EMAIL = profileData['admin_email']
     ADMIN_PHONE = profileData['admin_phone']
-
+    if FORCE_UPDATE == 1:
+        send_statistic('force_Update', 0)
+        FORCE_UPDATE = 0
     run_command()  # Only called once and from here.
 
 
