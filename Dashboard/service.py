@@ -386,9 +386,6 @@ def Download_Profile():  # Runs on loop (authentication-thread)
     WEB_LATEST_UPDATE = profileData['version']
     ADMIN_EMAIL = profileData['admin_email']
     ADMIN_PHONE = profileData['admin_phone']
-    if FORCE_UPDATE == 1:
-        send_statistic('force_Update', 0)
-        FORCE_UPDATE = 0
     run_command()  # Only called once and from here.
 
 
