@@ -294,7 +294,7 @@ def update():
     NEW_PRJ_PATH = HOME_PATH + "update" + '_' + str(WEB_LATEST_UPDATE)
     answer = subprocess.check_output('if test -d ' + NEW_PRJ_PATH + '; then echo "exist"; fi ', shell=True)
     if str(answer).__contains__("exist"):
-        os.system("sudo rm -R " + NEW_PRJ_PATH)
+        os.system("sudo rm -R " + NEW_PRJ_PATH)  # erasing what it's operating on
     write_update(URL_FOR_UPDATE, NEW_PRJ_PATH)
 
 
