@@ -311,7 +311,7 @@ def update_check():
     else:
         if MY_CURRENT_VERSION < int(WEB_LATEST_UPDATE):
             print("new update")
-            restart_15()
+            restart_15()  # gives 15 seconds to complete the below to return
             update()
             send_statistic('my_current_version', str(WEB_LATEST_UPDATE))
             return True
