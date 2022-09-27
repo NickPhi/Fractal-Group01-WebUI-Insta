@@ -308,6 +308,8 @@ def update():
     answer = subprocess.check_output('if test -d ' + NEW_PRJ_PATH + '; then echo "exist"; fi ', shell=True)
     if str(answer).__contains__("exist"):
         restart_update_15(NEW_PRJ_PATH)  # erasing what it's operating on
+        write_update(URL_FOR_UPDATE, NEW_PRJ_PATH)
+        os.system('sudo reboot')  # reboot right away if overwriting current update
     else:
         write_update(URL_FOR_UPDATE, NEW_PRJ_PATH)
 
@@ -326,7 +328,6 @@ def update_check():
             update()
             restart_15()  # gives 15 seconds to complete the below to return
             send_statistic('my_current_version', str(WEB_LATEST_UPDATE))
-            os.system('sudo reboot')
             return True
     print("no new update")
     return False
