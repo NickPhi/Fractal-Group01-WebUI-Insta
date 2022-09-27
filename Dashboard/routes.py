@@ -16,7 +16,7 @@ def index():
             return render_template('payment.html',
                                    response=Dashboard.service.ADMIN_EMAIL + " " + Dashboard.service.ADMIN_PHONE)
         elif Status == "Update":
-            return render_template('system_reboot.html', response='Updated your version')
+            return render_template('system_reboot.html', response='Updated your system')
         elif Status == "no-Wifi":
             return render_template('wifi.html')
     if request.method == 'POST':
