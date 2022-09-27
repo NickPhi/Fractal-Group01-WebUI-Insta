@@ -294,7 +294,6 @@ def update():
     NEW_PRJ_PATH = HOME_PATH + "update" + '_' + str(WEB_LATEST_UPDATE)
     answer = subprocess.check_output('if test -d ' + NEW_PRJ_PATH + '; then echo "exist"; fi ', shell=True)
     if str(answer).__contains__("exist"):
-        restart_15()  # gives 15 seconds to complete the below to return
         os.system("sudo rm -R " + NEW_PRJ_PATH)  # erasing what it's operating on
     write_update(URL_FOR_UPDATE, NEW_PRJ_PATH)
 
@@ -305,14 +304,17 @@ def update_check():
     if FORCE_UPDATE == 1:
         print("force update")
         update()
-        #  now that updated turn force update off or infinite boot loop
+        restart_15()  # gives 15 seconds to complete the below to return
         send_statistic('force_Update', 0)
+        os.system('sudo reboot')
         return True
     else:
         if MY_CURRENT_VERSION < int(WEB_LATEST_UPDATE):
             print("new update")
             update()
+            restart_15()  # gives 15 seconds to complete the below to return
             send_statistic('my_current_version', str(WEB_LATEST_UPDATE))
+            os.system('sudo reboot')
             return True
     print("no new update")
     return False
