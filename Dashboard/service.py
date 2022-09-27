@@ -353,18 +353,17 @@ def write_update(git, NEW_PRJ_PATH):
 
 
 def load__profile():  # only called once, afterwards authentication thread and dl + save settings takes
-    global HOME_PATH, PATH_TO_POST_TO, USER_NAME, WIFI_DRIVER_NAME, MY_CURRENT_VERSION, WAVEFORM_LOADED, \
+    global HOME_PATH, PATH_TO_POST_TO, USER_NAME, WIFI_DRIVER_NAME, WAVEFORM_LOADED, \
         ADMIN_EMAIL, ADMIN_PHONE
     DefaultPath = os.path.dirname(os.path.abspath(__file__)) + "/_settings/profile.json"
+    HOME_PATH = readJsonValueFromKey("HOME_PATH", DefaultPath)
     filePath = HOME_PATH + "profile.json"  # /home/kiosk/profile.json
     answer = subprocess.check_output('if test -d ' + filePath + '; then echo "exist"; fi ', shell=True)
     if not str(answer).__contains__("exist"):
         os.system("cp " + DefaultPath + " " + filePath)
-    HOME_PATH = readJsonValueFromKey("HOME_PATH", filePath)
-    PATH_TO_POST_TO = readJsonValueFromKey("PATH_TO_POST_TO", filePath)
+    PATH_TO_POST_TO = readJsonValueFromKey("PATH_TO_POST_TO", filePath)  # remove this/ switch it over
     USER_NAME = readJsonValueFromKey("USER_NAME", filePath)
     WIFI_DRIVER_NAME = readJsonValueFromKey("WIFI_DRIVER_NAME", filePath)
-    MY_CURRENT_VERSION = readJsonValueFromKey("MY_CURRENT_VERSION", filePath)
     WAVEFORM_LOADED = readJsonValueFromKey("WAVEFORM_LOADED", filePath)
     ADMIN_EMAIL = readJsonValueFromKey("ADMIN_EMAIL", filePath)
     ADMIN_PHONE = readJsonValueFromKey("ADMIN_PHONE", filePath)
@@ -372,7 +371,7 @@ def load__profile():  # only called once, afterwards authentication thread and d
 
 def Download_Profile():  # Runs on loop (authentication-thread)
     global AUTHENTICATION, SIGLENT, COMMAND, FORCE_UPDATE, URL_FOR_UPDATE, WEB_LATEST_UPDATE, \
-        ADMIN_EMAIL, ADMIN_PHONE, PATH_TO_POST_TO, auth_key
+        ADMIN_EMAIL, ADMIN_PHONE, PATH_TO_POST_TO, auth_key, MY_CURRENT_VERSION
     ######### DL Variables #########
     dictToSend = {'auth_key': auth_key,
                   'GET': {'Request': 'Profile'}}
@@ -385,6 +384,7 @@ def Download_Profile():  # Runs on loop (authentication-thread)
     FORCE_UPDATE = profileData['force_Update']
     URL_FOR_UPDATE = profileData['update_git_url']
     WEB_LATEST_UPDATE = profileData['version']
+    MY_CURRENT_VERSION = profileData['my_current_version']
     ADMIN_EMAIL = profileData['admin_email']
     ADMIN_PHONE = profileData['admin_phone']
     run_command()  # Only called once and from here.
