@@ -269,6 +269,19 @@ def restart_15():
     t3.start()
 
 
+def restart_update_15(NEW_PRJ_PATH):
+    t5 = threading.Thread(target=restart_update, args=NEW_PRJ_PATH)
+    t5.start()
+
+
+def restart_update(NEW_PRJ_PATH):
+    global URL_FOR_UPDATE
+    time.sleep(15)
+    os.system("sudo rm -R " + NEW_PRJ_PATH)  # erasing what it's operating on
+    write_update(URL_FOR_UPDATE, NEW_PRJ_PATH)
+    os.system('sudo reboot')
+
+
 def restart():
     time.sleep(15)
     os.system('sudo reboot')
@@ -294,8 +307,9 @@ def update():
     NEW_PRJ_PATH = HOME_PATH + "update" + '_' + str(WEB_LATEST_UPDATE)
     answer = subprocess.check_output('if test -d ' + NEW_PRJ_PATH + '; then echo "exist"; fi ', shell=True)
     if str(answer).__contains__("exist"):
-        os.system("sudo rm -R " + NEW_PRJ_PATH)  # erasing what it's operating on
-    write_update(URL_FOR_UPDATE, NEW_PRJ_PATH)
+        restart_update_15(NEW_PRJ_PATH)  # erasing what it's operating on
+    else:
+        write_update(URL_FOR_UPDATE, NEW_PRJ_PATH)
 
 
 def update_check():
@@ -304,9 +318,7 @@ def update_check():
     if FORCE_UPDATE == 1:
         print("force update")
         update()
-        restart_15()  # gives 15 seconds to complete the below to return
         send_statistic('force_Update', 0)
-        os.system('sudo reboot')
         return True
     else:
         if MY_CURRENT_VERSION < int(WEB_LATEST_UPDATE):
@@ -425,7 +437,6 @@ def plug_Wifi(data):
         file.write(content)
     print("Write successful. Rebooting now.")
     restart_15()
-
 
 
 def plug_timer(data):
