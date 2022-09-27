@@ -315,9 +315,6 @@ def update_check():
         restart_15()
         return True
     else:
-        print(type(MY_CURRENT_VERSION))
-        print(WEB_LATEST_UPDATE)
-        print(type(WEB_LATEST_UPDATE))
         if MY_CURRENT_VERSION < int(WEB_LATEST_UPDATE):
             print("new update")
             update()
@@ -358,7 +355,11 @@ def write_update(git, NEW_PRJ_PATH):
 def load__profile():  # only called once, afterwards authentication thread and dl + save settings takes
     global HOME_PATH, PATH_TO_POST_TO, USER_NAME, WIFI_DRIVER_NAME, MY_CURRENT_VERSION, WAVEFORM_LOADED, \
         ADMIN_EMAIL, ADMIN_PHONE
-    filePath = os.path.dirname(os.path.abspath(__file__)) + "/_settings/profile.json"
+    DefaultPath = os.path.dirname(os.path.abspath(__file__)) + "/_settings/profile.json"
+    filePath = HOME_PATH + "profile.json"  # /home/kiosk/profile.json
+    answer = subprocess.check_output('if test -d ' + filePath + '; then echo "exist"; fi ', shell=True)
+    if not str(answer).__contains__("exist"):
+        os.system("cp " + DefaultPath + " " + filePath)
     HOME_PATH = readJsonValueFromKey("HOME_PATH", filePath)
     PATH_TO_POST_TO = readJsonValueFromKey("PATH_TO_POST_TO", filePath)
     USER_NAME = readJsonValueFromKey("USER_NAME", filePath)
@@ -429,6 +430,7 @@ def plug_Wifi(data):
         file.write(content)
     print("Write successful. Rebooting now.")
     restart_15()
+
 
 
 def plug_timer(data):
