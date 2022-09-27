@@ -303,10 +303,10 @@ def update_check():
     global HOME_PATH, MY_CURRENT_VERSION, WEB_LATEST_UPDATE, URL_FOR_UPDATE, FORCE_UPDATE
     if FORCE_UPDATE == 1:
         print("force update")
+        restart_15()  # gives 15 seconds to complete the below to return
         update()
         #  now that updated turn force update off or infinite boot loop
         send_statistic('force_Update', 0)
-        restart_15()
         return True
     else:
         if MY_CURRENT_VERSION < int(WEB_LATEST_UPDATE):
