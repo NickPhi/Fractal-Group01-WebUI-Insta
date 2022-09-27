@@ -269,19 +269,6 @@ def restart_15():
     t3.start()
 
 
-def restart_update_15(NEW_PRJ_PATH):
-    t5 = threading.Thread(target=restart_update, args=NEW_PRJ_PATH)
-    t5.start()
-
-
-def restart_update(NEW_PRJ_PATH):
-    global URL_FOR_UPDATE
-    time.sleep(15)
-    os.system("sudo rm -R " + NEW_PRJ_PATH)  # erasing what it's operating on
-    write_update(URL_FOR_UPDATE, NEW_PRJ_PATH)
-    os.system('sudo reboot')
-
-
 def restart():
     time.sleep(15)
     os.system('sudo reboot')
@@ -307,9 +294,9 @@ def update():
     NEW_PRJ_PATH = HOME_PATH + "update" + '_' + str(WEB_LATEST_UPDATE)
     answer = subprocess.check_output('if test -d ' + NEW_PRJ_PATH + '; then echo "exist"; fi ', shell=True)
     if str(answer).__contains__("exist"):
-        restart_update_15(NEW_PRJ_PATH)  # erasing what it's operating on
+        os.system("sudo rm -R " + NEW_PRJ_PATH)  # erasing what it's operating on
         write_update(URL_FOR_UPDATE, NEW_PRJ_PATH)
-        os.system('sudo reboot')  # reboot right away if overwriting current update
+        os.system('sudo reboot')
     else:
         write_update(URL_FOR_UPDATE, NEW_PRJ_PATH)
 
