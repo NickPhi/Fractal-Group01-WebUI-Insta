@@ -290,17 +290,20 @@ def send_statistic(statistic, value):
 
 
 def update():
-    global HOME_PATH, URL_FOR_UPDATE
-    fragment_git = URL_FOR_UPDATE.split("/")
-    prj_name = fragment_git[4]  # Assuming git URL separated 5 times by "/"
-    x = 0
-    while True:
-        test_path = HOME_PATH + prj_name + '_' + str(x)
-        answer = subprocess.check_output('if test -d ' + test_path + '; then echo "exist"; fi ', shell=True)
-        if not str(answer).__contains__("exist"):
-            break
-        x += 1
-    NEW_PRJ_PATH = HOME_PATH + prj_name + '_' + str(x)  # LATEST_USER_VERSION is a number
+    global HOME_PATH, WEB_LATEST_UPDATE, URL_FOR_UPDATE
+    NEW_PRJ_PATH = HOME_PATH + "update" + '_' + str(WEB_LATEST_UPDATE)
+    answer = subprocess.check_output('if test -d ' + NEW_PRJ_PATH + '; then echo "exist"; fi ', shell=True)
+    if str(answer).__contains__("exist"):
+        os.system("sudo rm -R " + NEW_PRJ_PATH)
+    # fragment_git = URL_FOR_UPDATE.split("/")
+    # prj_name = fragment_git[4]  # Assuming git URL separated 5 times by "/"
+    # x = 0
+    # while True:
+    #    test_path = HOME_PATH + prj_name + '_' + str(x)
+    #    answer = subprocess.check_output('if test -d ' + test_path + '; then echo "exist"; fi ', shell=True)
+    #    if not str(answer).__contains__("exist"):
+    #        break
+    #    x += 1
     write_update(URL_FOR_UPDATE, NEW_PRJ_PATH)
 
 
