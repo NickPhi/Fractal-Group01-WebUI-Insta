@@ -4,32 +4,32 @@ import pyTasks.siglent
 #  GLOBALS
 t1 = threading.Thread  # alarm thread
 t2 = threading.Thread  # timer thread
-timer_state = None  # Global Variable
-alarm_state = None  # Global Variable
+timer_state = ""  # Global Variable
+alarm_state = ""  # Global Variable
 ON_start = 0
 ON_end = 0
 ##### Load from Profile #####
-HOME_PATH = None  # Path to /home/kiosk
-USER_NAME = None
-PATH_TO_POST_TO = None  # None
-WIFI_DRIVER_NAME = None
-MY_CURRENT_VERSION = None
-WAVEFORM_LOADED = None
+HOME_PATH = ""  # Path to /home/kiosk
+USER_NAME = ""
+PATH_TO_POST_TO = ""  # None
+WIFI_DRIVER_NAME = ""
+MY_CURRENT_VERSION = 0
+WAVEFORM_LOADED = 0
 ##### Download from web #####
-ADMIN_EMAIL = None
-ADMIN_PHONE = None
-AUTHENTICATION = None
-COMMAND = None
-SIGLENT = None
-FORCE_UPDATE = None
-URL_FOR_UPDATE = None
-WEB_LATEST_UPDATE = None
+ADMIN_EMAIL = ""
+ADMIN_PHONE = ""
+AUTHENTICATION = 0
+COMMAND = ""
+SIGLENT = 0
+FORCE_UPDATE = 0
+URL_FOR_UPDATE = ""
+WEB_LATEST_UPDATE = 0
 ##### Extra variables #######
 ONCE_INDEX = 0
 POWER_GEN_STATE = 0
 MODE_PROCESS_IS_RUNNING = False
-MODE_STATE = None
-SiglentIP = None
+MODE_STATE = ""
+SiglentIP = ""
 auth_key = 'klshdfgkjh(*&89y(*YF^*&%&RIUHEFIH986893yh4rjfskjdhffhgajkdfni&*%&^^IUJhknfga'
 
 
@@ -60,7 +60,7 @@ def start_index():
                     return "Update"
                 threading.Thread(target=authentication_thread).start()  # start authentication loop thread
                 power_supply_amp_("ON")  # turn amp on when we authenticate
-                if SIGLENT == "1":  # if siglent on then pass powering signal generator
+                if SIGLENT == 1:  # if siglent on then pass powering signal generator
                     pass  # cannot control Siglent Device Power state test
                     # Signal_Generator_Controller("SIGLENT_POWER_ON")
                 else:
@@ -92,7 +92,7 @@ def MODE(mode):
             return
         MODE_PROCESS_IS_RUNNING = True
         MODE_STATE = "ON"
-        if SIGLENT == "1":  # if siglent on then pass siglent signal
+        if SIGLENT == 1:  # if siglent on then pass siglent signal
             if SiglentIP is None:
                 return
             Signal_Generator_Controller("SIGLENT_ON")
@@ -111,7 +111,7 @@ def MODE(mode):
         send_statistic('MINUTES', run_time)
         print(run_time)
         speaker_protection_("OFF")
-        if SIGLENT == "1":  # if siglent on then pass siglent signal off
+        if SIGLENT == 1:  # if siglent on then pass siglent signal off
             Signal_Generator_Controller("SIGLENT_OFF")
         else:
             Signal_Generator_Controller("MHS_OFF")  # pass signal generator off
@@ -202,8 +202,8 @@ def send_settings_on_settings_page(data):
                   " ADMIN_PHONE: " + str(ADMIN_PHONE) + " AUTHENTICATION: " + str(AUTHENTICATION) + \
                   " COMMAND: " + str(COMMAND) + " SIGLENT: " + str(SIGLENT) + " FORCE_UPDATE: " + str(FORCE_UPDATE) + \
                   " URL_FOR_UPDATE: " + str(URL_FOR_UPDATE) + " WEB_LATEST_UPDATE: " + str(WEB_LATEST_UPDATE) + \
-                  " POWER_GEN_STATE: " + str(POWER_GEN_STATE) + " MODE_PROCESS_IS_RUNNING: " + str(MODE_PROCESS_IS_RUNNING) + \
-                  " MODE_STATE: " + str(MODE_STATE) + " auth_key: " + str(auth_key)
+                  " POWER_GEN_STATE: " + str(POWER_GEN_STATE) + " MODE_PROCESS_IS_RUNNING: " + \
+                  str(MODE_PROCESS_IS_RUNNING) + " MODE_STATE: " + str(MODE_STATE) + " auth_key: " + str(auth_key)
         send_statistic('ACTIVE_UPDATE', message)
         test_string = "Path= what to send"
         # file size # sub process lsblk
@@ -283,7 +283,7 @@ def send_statistic(statistic, value):
     dictToSend = {'auth_key': auth_key,
                   'Analytics': {statistic: value}}
     headers = {'Content-type': 'application/json'}
-    res = requests.post(url=PATH_TO_POST_TO, json=dictToSend, headers=headers)
+    requests.post(url=PATH_TO_POST_TO, json=dictToSend, headers=headers)
 
 
 ###########################################################################
@@ -506,6 +506,10 @@ def button_controller(data):
             alarm_thread("start")
         results = {'processed': 'true'}
         return jsonify(results)
+
+
+time_t1 = 0
+time_a1 = 0
 
 
 def timer_thread(mode):
