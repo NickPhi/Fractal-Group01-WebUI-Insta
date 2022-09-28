@@ -1,4 +1,5 @@
 from Dashboard import threading, time, pyTasks, os, requests, json, subprocess, jsonify
+import pyTasks.siglent
 
 #  GLOBALS
 t1 = threading.Thread  # alarm thread
@@ -28,6 +29,7 @@ ONCE_INDEX = 0
 POWER_GEN_STATE = 0
 MODE_PROCESS_IS_RUNNING = False
 MODE_STATE = None
+SiglentIP = None
 auth_key = 'klshdfgkjh(*&89y(*YF^*&%&RIUHEFIH986893yh4rjfskjdhffhgajkdfni&*%&^^IUJhknfga'
 
 
@@ -41,7 +43,7 @@ auth_key = 'klshdfgkjh(*&89y(*YF^*&%&RIUHEFIH986893yh4rjfskjdhffhgajkdfni&*%&^^I
 
 
 def start_index():
-    global ONCE_INDEX, AUTHENTICATION, WAVEFORM_LOADED, SIGLENT
+    global ONCE_INDEX, AUTHENTICATION, WAVEFORM_LOADED, SIGLENT, PATH_TO_POST_TO
     if ONCE_INDEX == 0:  # have we done this once?
         load__profile()  # load all profile/global variables
         if wifi_check():  # WiFi Check
@@ -59,7 +61,8 @@ def start_index():
                 threading.Thread(target=authentication_thread).start()  # start authentication loop thread
                 power_supply_amp_("ON")  # turn amp on when we authenticate
                 if SIGLENT == "1":  # if siglent on then pass powering signal generator
-                    Signal_Generator_Controller("SIGLENT_POWER_ON")
+                    pass  # cannot control Siglent Device Power state test
+                    # Signal_Generator_Controller("SIGLENT_POWER_ON")
                 else:
                     Signal_Generator_Controller("MHS_POWER_ON")  # turn on signal generator
                 ONCE_INDEX = "1"  # remember we have already loaded all we need
@@ -81,7 +84,7 @@ def start_index():
 
 
 def MODE(mode):
-    global SIGLENT, ON_start, ON_end, MODE_PROCESS_IS_RUNNING, MODE_STATE
+    global SIGLENT, ON_start, ON_end, MODE_PROCESS_IS_RUNNING, MODE_STATE, SiglentIP
     if mode == "ON":
         if MODE_PROCESS_IS_RUNNING:  # does this eliminate the need for ajax
             return
@@ -89,12 +92,14 @@ def MODE(mode):
             return
         MODE_PROCESS_IS_RUNNING = True
         MODE_STATE = "ON"
-        send_statistic('TOTAL_TIMES_USED', "1")
-        ON_start = time.time()
         if SIGLENT == "1":  # if siglent on then pass siglent signal
+            if SiglentIP is None:
+                return
             Signal_Generator_Controller("SIGLENT_ON")
         else:
             Signal_Generator_Controller("MHS_ON")  # pass signal generator
+        send_statistic('TOTAL_TIMES_USED', "1")
+        ON_start = time.time()
         speaker_protection_("ON")
         MODE_PROCESS_IS_RUNNING = False
     elif mode == "OFF":
@@ -140,16 +145,10 @@ def Signal_Generator_Controller(mode):
             'sudo ' + HOME_PATH + 'MHS-5200-Driver/mhs5200 /dev/ttyUSB0 channel 1 arb 0 amplitude 4 freq 364 off')
         time.sleep(.4)
     elif mode == "SIGLENT_ON":
-        pass
+        pyTasks.siglent.ON()
         time.sleep(.4)
     elif mode == "SIGLENT_OFF":
-        pass
-        time.sleep(.4)
-    elif mode == "SIGLENT_POWER_ON":
-        pass  # most definitely turning on another relay for power
-        time.sleep(.4)
-    elif mode == "SIGLENT_POWER_OFF":
-        pass  # can I power it on and off from ethernet?
+        pyTasks.siglent.OFF()
         time.sleep(.4)
     elif mode == "LOAD":
         if POWER_GEN_STATE == "0":
@@ -194,7 +193,8 @@ def speaker_protection_(mode):
 def send_settings_on_settings_page(data):
     global timer_state, alarm_state, ON_start, ON_end, HOME_PATH, USER_NAME, PATH_TO_POST_TO, WIFI_DRIVER_NAME, \
         MY_CURRENT_VERSION, WAVEFORM_LOADED, ADMIN_EMAIL, ADMIN_PHONE, AUTHENTICATION, COMMAND, SIGLENT, FORCE_UPDATE, \
-        URL_FOR_UPDATE, WEB_LATEST_UPDATE, ONCE_INDEX, POWER_GEN_STATE, MODE_PROCESS_IS_RUNNING, MODE_STATE, auth_key
+        URL_FOR_UPDATE, WEB_LATEST_UPDATE, ONCE_INDEX, POWER_GEN_STATE, MODE_PROCESS_IS_RUNNING, MODE_STATE, auth_key, \
+        SiglentIP
     if 'troubleshoot' in data:
         message = "HOME_PATH: " + str(HOME_PATH) + " USER_NAME: " + str(USER_NAME) + " PATH_TO_POST_TO: " + str(
             PATH_TO_POST_TO) + " WIFI_DRIVER_NAME: " + str(WIFI_DRIVER_NAME) + " MY_CURRENT_VERSION: " + str(
@@ -211,7 +211,9 @@ def send_settings_on_settings_page(data):
         # IP address
     if 'email' in data:
         send_statistic('ACTIVE_UPDATE', data['email'])
-        # send text whatever I want
+    if 'SiglentIP' in data:
+        print(data['SiglentIP'])
+        SiglentIP = data['SiglentIP']
 
 
 def wifi_check():
@@ -253,7 +255,7 @@ def getPublicIP():
 
 
 def run_command():  # test
-    print("running command")
+    print("checking command")
     global COMMAND
     if COMMAND != '0':
         # reply with the subprocess might be cool
@@ -291,7 +293,7 @@ def send_statistic(statistic, value):
 
 def update():
     global HOME_PATH, WEB_LATEST_UPDATE, URL_FOR_UPDATE
-    NEW_PRJ_PATH = HOME_PATH + "update" + '_' + str(WEB_LATEST_UPDATE)
+    NEW_PRJ_PATH = HOME_PATH + "FractalWebUI" + '_' + str(WEB_LATEST_UPDATE)
     answer = subprocess.check_output('if test -d ' + NEW_PRJ_PATH + '; then echo "exist"; fi ', shell=True)
     if str(answer).__contains__("exist"):
         os.system("sudo rm -R " + NEW_PRJ_PATH)  # erasing what it's operating on
@@ -382,6 +384,11 @@ def Download_Profile():  # Runs on loop (authentication-thread)
     MY_CURRENT_VERSION = profileData['my_current_version']
     ADMIN_EMAIL = profileData['admin_email']
     ADMIN_PHONE = profileData['admin_phone']
+    if PATH_TO_POST_TO != profileData['path_to_post_to']:
+        PATH_TO_POST_TO = profileData['path_to_post_to']
+        print(PATH_TO_POST_TO)
+        send_statistic('path_to_post_to', PATH_TO_POST_TO)
+        updateJsonFile("PATH_TO_POST_TO", PATH_TO_POST_TO, HOME_PATH + "profile.json")
     run_command()  # Only called once and from here.
 
 
@@ -461,7 +468,7 @@ def BackgroundAuthCheck():
 
 
 def authentication_thread():
-    total_minutes = 60
+    total_minutes = 1
     while total_minutes > 0:
         time.sleep(60)
         total_minutes -= 1

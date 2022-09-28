@@ -1,5 +1,5 @@
 import Dashboard.service
-from Dashboard import app, threading, render_template, request, url_for, redirect, requests
+from Dashboard import app, threading, render_template, request, url_for, redirect, requests, re
 from Dashboard.service import start_index, send_settings_on_settings_page, plug_Wifi, plug_timer, plug_alarm, \
     button_controller, MODE, alarm_thread, timer_thread
 
@@ -68,8 +68,27 @@ def settings():
         return render_template("settings.html",
                                response=Dashboard.service.ADMIN_EMAIL + " " + Dashboard.service.ADMIN_PHONE)
     if request.method == 'POST':
+        if 'SiglentIP' in request.form:
+            if Dashboard.service.SIGLENT == 1:
+                return render_template('siglent.html')
         send_settings_on_settings_page(request.form)
         return render_template('index.html')
+
+
+@app.route('/siglent.html', methods=['GET', 'POST'])
+def siglent():
+    if request.method == 'GET':
+        return render_template("siglent.html")
+    if request.method == 'POST':
+        # confirm IP address
+        regex = "^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$"
+        if re.search(regex, request.form['SiglentIP']):
+            print("Valid Ip address")
+            send_settings_on_settings_page(request.form)
+            return render_template('index.html')
+        else:
+            print("Invalid Ip address")
+            return render_template("siglent.html", invalid="Invalid IP Address, try again.")
 
 
 @app.route('/wifi.html', methods=['GET', 'POST'])

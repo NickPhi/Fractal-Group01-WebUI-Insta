@@ -1,69 +1,67 @@
-#!/usr/bin/env python2.7
-# -*- coding: utf-8 -*-
-import binascii
-import time
-# import pyvisa
-# import pyvisa as visa
+import Dashboard.service
+from Dashboard import socket, time
 
-# USB resource of Device
-device_resource = "USB0::0xF4EC::0x1101::#15::INSTR"
-# Little endian, 16-bit 2's complement
-wave_points = [0x0010, 0x0020, 0x0030, 0x0040, 0x0050, 0x0060, 0x0070, 0xff7f]
+remote_ip = Dashboard.service.SiglentIP  # should match the instrument’s IP address
+port = 5024  # the port number of the instrument service
 
 
-def create_wave_file():
-    """create a file"""
-    f = open("wave1.bin", "wb")
-    for a in wave_points:
-        b = hex(a)
-    b = b[2:]
-    len_b = len(b)
-    if 0 == len_b:
-        b = '0000'
-    elif 1 == len_b:
-        b = '000' + b
-    elif 2 == len_b:
-        b = '00' + b
-    elif 3 == len_b:
-        b = '0' + b
-        c = binascii.a2b_hex(b)  # Hexadecimal integer to ASCii encoded string
-        f.write(c)
-        f.close()
+def SocketConnect():
+    try:
+        # create an AF_INET, STREAM socket (TCP)
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    except socket.error:
+        print('Failed to create socket.')
+        Dashboard.service.SiglentIP = None
+    try:
+        # Connect to remote server
+        s.connect((remote_ip, port))
+    except socket.error:
+        print('failed to connect to ip ' + remote_ip)
+        Dashboard.service.SiglentIP = None
+    return s
 
 
-def send_wawe_data(dev):
-    """send wave1.bin to the device"""
-    f = open("wave1.bin", "rb")  # wave1.bin is the waveform to be sent
-    data = f.read()
-    print('write bytes:', len(data))
-    dev.write("C1:WVDT WVNM,wave1,FREQ,2000.0,AMPL,4.0,OFST,0.0,PHASE,0.0,WAVEDATA,%s" %
-              data)  # "X" series (SDG1000X/SDG2000X/SDG6000X/X-E)
-    dev.write("C1:ARWV NAME,wave1")
-    f.close()
+def SocketSend(Sock, cmd):
+    try:
+        # Send cmd string
+        Sock.sendall(cmd)
+        Sock.sendall(b'\n')
+        time.sleep(1)
+    except socket.error:
+        # Send failed
+        print('Send failed')
+        Dashboard.service.SiglentIP = None
+    # reply = Sock.recv(4096)
+    # return reply
 
 
-def get_wave_data(dev):
-    """get wave from the devide"""
-    f = open("wave2.bin", "wb")  # save the waveform as wave2.bin
-    dev.write("WVDT? user,wave1")  # "X" series (SDG1000X/SDG2000X/SDG6000X/X-E)
+def SocketClose(Sock):
+    # close the socket
+    Sock.close()
     time.sleep(1)
-    data = dev.read()
-    data_pos = data.find("WAVEDATA,") + len("WAVEDATA,")
-    print(data[0:data_pos])
-    wave_data = data[data_pos:]
-    print('read bytes:', len(wave_data))
-    f.write(wave_data)
-    f.close()
 
 
-if __name__ == '__main__':
-    """"""
-  #  rm = visa.ResourceManager()
-    # device = rm.get_instrument(device_resource, timeout=5000, chunk_size=40 * 1024)
-    # device = visa.instrument(device_resource, timeout=5000, chunk_size=40 * 1024)
-   # device = pyvisa.resources.USBInstrument(device_resource)
-   # abc = device.write("*IDN")
-    # print(abc)
-    # create_wave_file()
-    # send_wawe_data(device)
-    # get_wave_data(device)
+#################################
+# The idea might be to user input
+# ch1/ch2 and to turn on/off
+#################################
+
+
+def ON():
+    global remote_ip
+    global port
+
+    s = SocketConnect()
+    SocketSend(s, b'C1:OUTP ON')  # Set CH1 ON
+    SocketClose(s)  # Close socket
+    print('Query complete.')
+
+
+def OFF():
+    global remote_ip
+    global port
+
+    s = SocketConnect()
+    SocketSend(s, b'C1:OUTP OFF')
+    SocketClose(s)  # Close socket
+    print('Query complete.')
