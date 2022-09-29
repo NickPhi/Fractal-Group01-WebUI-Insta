@@ -291,6 +291,7 @@ def update():
     if str(answer).__contains__("exist"):
         os.system("sudo rm -R " + NEW_PRJ_PATH)  # erasing what it's operating on
         write_update(URL_FOR_UPDATE, NEW_PRJ_PATH)
+        send_statistic('force_Update', 0)
         os.system('sudo reboot')
     else:
         write_update(URL_FOR_UPDATE, NEW_PRJ_PATH)
@@ -302,7 +303,6 @@ def update_check():
     if FORCE_UPDATE == 1:
         print("force update")
         update()
-        send_statistic('force_Update', 0)
         return True
     else:
         if MY_CURRENT_VERSION < int(WEB_LATEST_UPDATE):
