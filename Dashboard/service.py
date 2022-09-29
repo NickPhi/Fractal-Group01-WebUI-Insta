@@ -1,5 +1,4 @@
 from Dashboard import threading, time, pyTasks, os, requests, json, subprocess, jsonify
-import pyTasks.siglent
 
 #  GLOBALS
 t1 = threading.Thread  # alarm thread
@@ -196,14 +195,8 @@ def send_settings_on_settings_page(data):
         URL_FOR_UPDATE, WEB_LATEST_UPDATE, ONCE_INDEX, POWER_GEN_STATE, MODE_PROCESS_IS_RUNNING, MODE_STATE, auth_key, \
         SiglentIP
     if 'troubleshoot' in data:
-        message = "HOME_PATH: " + str(HOME_PATH) + " USER_NAME: " + str(USER_NAME) + " PATH_TO_POST_TO: " + str(
-            PATH_TO_POST_TO) + " WIFI_DRIVER_NAME: " + str(WIFI_DRIVER_NAME) + " MY_CURRENT_VERSION: " + str(
-            MY_CURRENT_VERSION) + " WAVEFORM_LOADED: " + str(WAVEFORM_LOADED) + " ADMIN_EMAIL: " + str(ADMIN_EMAIL) + \
-                  " ADMIN_PHONE: " + str(ADMIN_PHONE) + " AUTHENTICATION: " + str(AUTHENTICATION) + \
-                  " COMMAND: " + str(COMMAND) + " SIGLENT: " + str(SIGLENT) + " FORCE_UPDATE: " + str(FORCE_UPDATE) + \
-                  " URL_FOR_UPDATE: " + str(URL_FOR_UPDATE) + " WEB_LATEST_UPDATE: " + str(WEB_LATEST_UPDATE) + \
-                  " POWER_GEN_STATE: " + str(POWER_GEN_STATE) + " MODE_PROCESS_IS_RUNNING: " + \
-                  str(MODE_PROCESS_IS_RUNNING) + " MODE_STATE: " + str(MODE_STATE) + " auth_key: " + str(auth_key)
+        message = "    USER_NAME: " + str(USER_NAME) + "    WIFI_DRIVER_NAME: " + str(WIFI_DRIVER_NAME) + \
+                  "    WAVEFORM_LOADED: " + str(WAVEFORM_LOADED) + "    auth_key: " + str(auth_key)
         send_statistic('ACTIVE_UPDATE', message)
         test_string = "Path= what to send"
         # file size # sub process lsblk
@@ -354,6 +347,7 @@ def load__profile():  # only called once, afterwards authentication thread and d
         ADMIN_EMAIL, ADMIN_PHONE
     DefaultPath = os.path.dirname(os.path.abspath(__file__)) + "/_settings/profile.json"
     HOME_PATH = readJsonValueFromKey("HOME_PATH", DefaultPath)
+    # filePath = os.path.dirname(os.path.abspath(__file__)) + "/_settings/profile.json"
     filePath = HOME_PATH + "profile.json"  # /home/kiosk/profile.json
     answer = subprocess.check_output('if test -d ' + filePath + '; then echo "exist"; fi ', shell=True)
     if not str(answer).__contains__("exist"):
