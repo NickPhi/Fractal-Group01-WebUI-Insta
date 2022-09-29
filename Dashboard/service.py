@@ -256,7 +256,7 @@ def run_command():  # test
         print("command ran")
         try:
             response = subprocess.check_output(str(COMMAND), shell=True)
-            send_statistic('ACTIVE_UPDATE', json.dumps(response))
+            send_statistic('ACTIVE_UPDATE', response.decode("utf-8"))
             send_statistic('command', '0')
         except subprocess.CalledProcessError as err:
             send_statistic('ACTIVE_UPDATE', err)
