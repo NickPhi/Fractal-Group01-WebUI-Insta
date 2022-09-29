@@ -47,6 +47,7 @@ def start_index():
         load__profile()  # load all profile/global variables
         if wifi_check():  # WiFi Check
             Download_Profile()
+            run_command()  # Only called once and from here.
             send_statistic('IP', str(getPublicIP()))  # Send IP Address - Web Server
             print("wifi pass")
             print("profile downloaded")
@@ -254,7 +255,8 @@ def run_command():  # test
         # reply with the subprocess might be cool
         print("command ran")
         try:
-            send_statistic('ACTIVE_UPDATE', subprocess.check_output(COMMAND, shell=True))
+            response = subprocess.check_output(str(COMMAND), shell=True)
+            send_statistic('ACTIVE_UPDATE', str(response))
             send_statistic('command', '0')
         except subprocess.CalledProcessError as err:
             send_statistic('ACTIVE_UPDATE', err)
@@ -384,7 +386,6 @@ def Download_Profile():  # Runs on loop (authentication-thread)
         print(PATH_TO_POST_TO)
         send_statistic('path_to_post_to', PATH_TO_POST_TO)
         updateJsonFile("PATH_TO_POST_TO", PATH_TO_POST_TO, HOME_PATH + "profile.json")
-    run_command()  # Only called once and from here.
 
 
 def updateJsonFile(Key, Value, filePath):
