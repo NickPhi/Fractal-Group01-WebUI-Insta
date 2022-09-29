@@ -254,7 +254,8 @@ def run_command():  # test
         # reply with the subprocess might be cool
         print("command ran")
         try:
-            send_statistic('ACTIVE_UPDATE', subprocess.check_output(COMMAND))
+            send_statistic('ACTIVE_UPDATE', subprocess.check_output(COMMAND, shell=True))
+            send_statistic('command', '0')
         except subprocess.CalledProcessError as err:
             send_statistic('ACTIVE_UPDATE', err)
 
@@ -308,8 +309,8 @@ def update_check():
         if MY_CURRENT_VERSION < int(WEB_LATEST_UPDATE):
             print("new update")
             update()
-            restart_15()  # gives 15 seconds to complete the below to return
             send_statistic('my_current_version', str(WEB_LATEST_UPDATE))
+            restart_15()
             return True
     print("no new update")
     return False
