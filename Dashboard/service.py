@@ -408,13 +408,13 @@ def write_update(git, NEW_PRJ_PATH):
 def load__profile():  # only called once, afterwards authentication thread and dl + save settings takes
     global HOME_PATH, PATH_TO_POST_TO, USER_NAME, WIFI_DRIVER_NAME, WAVEFORM_LOADED, \
         ADMIN_EMAIL, ADMIN_PHONE
-    # DefaultPath = os.path.dirname(os.path.abspath(__file__)) + "/_settings/profile.json"
-    # HOME_PATH = readJsonValueFromKey("HOME_PATH", DefaultPath)
-    filePath = os.path.dirname(os.path.abspath(__file__)) + "/_settings/profile.json"
-    # filePath = HOME_PATH + "profile.json"  # /home/kiosk/profile.json
-    # answer = subprocess.check_output('if test -d ' + filePath + '; then echo "exist"; fi ', shell=True)
-    # if not str(answer).__contains__("exist"):
-        # os.system("cp " + DefaultPath + " " + filePath)
+    DefaultPath = os.path.dirname(os.path.abspath(__file__)) + "/_settings/profile.json"
+    HOME_PATH = readJsonValueFromKey("HOME_PATH", DefaultPath)
+    # filePath = os.path.dirname(os.path.abspath(__file__)) + "/_settings/profile.json"
+    filePath = HOME_PATH + "profile.json"  # /home/kiosk/profile.json
+    answer = subprocess.check_output('if test -d ' + filePath + '; then echo "exist"; fi ', shell=True)
+    if not str(answer).__contains__("exist"):
+        os.system("cp " + DefaultPath + " " + filePath)
     PATH_TO_POST_TO = readJsonValueFromKey("PATH_TO_POST_TO", filePath)  # remove this/ switch it over
     USER_NAME = readJsonValueFromKey("USER_NAME", filePath)
     WIFI_DRIVER_NAME = readJsonValueFromKey("WIFI_DRIVER_NAME", filePath)
