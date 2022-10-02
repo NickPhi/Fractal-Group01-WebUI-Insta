@@ -20,9 +20,9 @@ def fix():
 
 
 def resortToBackup(x):
-    old = "/home/kiosk/FractalWebUI_" + str(x)
+    # old = "/home/kiosk/FractalWebUI_" + str(x)
     revised = "/home/kiosk/FractalWebUI_" + str(x-1)
-    os.system("sudo rm -R " + old)  # remove old update
+    # os.system("sudo rm -R " + old)  # remove old update
     with open('/lib/systemd/system/webserver.service', 'w') as file:
         content = \
             '''

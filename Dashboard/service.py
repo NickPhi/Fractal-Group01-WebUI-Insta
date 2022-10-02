@@ -1,4 +1,4 @@
-from Dashboard import threading, time, pyTasks, os, requests, json, subprocess, jsonify
+from Dashboard import threading, time, pyTasks, os, requests, json, subprocess, jsonify, sys
 
 #  GLOBALS
 t1 = threading.Thread  # alarm thread
@@ -195,19 +195,39 @@ def send_settings_on_settings_page(data):
         MY_CURRENT_VERSION, WAVEFORM_LOADED, ADMIN_EMAIL, ADMIN_PHONE, AUTHENTICATION, COMMAND, SIGLENT, FORCE_UPDATE, \
         URL_FOR_UPDATE, WEB_LATEST_UPDATE, ONCE_INDEX, POWER_GEN_STATE, MODE_PROCESS_IS_RUNNING, MODE_STATE, auth_key, \
         SiglentIP
-    if 'troubleshoot' in data:
-        message = "    USER_NAME: " + str(USER_NAME) + "    WIFI_DRIVER_NAME: " + str(WIFI_DRIVER_NAME) + \
-                  "    WAVEFORM_LOADED: " + str(WAVEFORM_LOADED) + "    auth_key: " + str(auth_key)
-        send_statistic('ACTIVE_UPDATE', message)
-        test_string = "Path= what to send"
-        # file size # sub process lsblk
-        HDD_size = str(subprocess.check_output('lsblk', shell=True))
-        # IP address
-    if 'email' in data:
-        send_statistic('ACTIVE_UPDATE', data['email'])
-    if 'SiglentIP' in data:
-        print(data['SiglentIP'])
-        SiglentIP = data['SiglentIP']
+    try:
+        if 'troubleshoot' in data:
+            try:
+                message = "    USER_NAME: " + str(USER_NAME) + "    WIFI_DRIVER_NAME: " + str(WIFI_DRIVER_NAME) + \
+                          "    WAVEFORM_LOADED: " + str(WAVEFORM_LOADED) + "    auth_key: " + str(auth_key)
+                send_statistic('ACTIVE_UPDATE', message)
+                test_string = "Path= what to send"
+                # file size # sub process lsblk
+                HDD_size = str(subprocess.check_output('lsblk', shell=True))
+                # IP address
+            except Exception as error:
+                send_statistic('ACTIVE_UPDATE', 'settings_send failed: troubleshoot ' + 'troubleshoot' + str(error))
+        if 'rollback' in data:
+            try:
+                filePath = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + "fix.py"
+                os.system('python3 ' + filePath)  #
+            except subprocess.CalledProcessError as err:
+                send_statistic('ACTIVE_UPDATE', str(err))
+        if 'email' in data:
+            try:
+                send_statistic('ACTIVE_UPDATE', data['email'])
+            except Exception as error:
+                send_statistic('ACTIVE_UPDATE', 'settings_send failed: email ' + 'email'
+                               + str(data['email']) + str(error))
+        if 'SiglentIP' in data:
+            try:
+                print(data['SiglentIP'])
+                SiglentIP = data['SiglentIP']
+            except Exception as error:
+                send_statistic('ACTIVE_UPDATE', 'settings_send failed: SiglentIP ' + 'SiglentIP'
+                               + str(data['SiglentIP']) + str(error))
+    except Exception as error:
+        send_statistic('ACTIVE_UPDATE', 'send_settings_on_settings_page() failed: whole thing ' + str(error))
 
 
 def wifi_check():
@@ -222,64 +242,80 @@ def wifi_check():
                 return True
         else:
             return True
-    except:
+    except Exception as error:
         print("internet issue")
-        # render error message
+        print(error)
         return False
 
 
 def check_for_auth():
-    global AUTHENTICATION
-    print("User Authentication check")
-    if AUTHENTICATION == 1:
-        print("Pass")
-        return True
-    else:
-        print("FAIL")
-        return False
+    try:
+        global AUTHENTICATION
+        print("User Authentication check")
+        if AUTHENTICATION == 1:
+            print("Pass")
+            return True
+        else:
+            print("FAIL")
+            return False
+    except Exception as error:
+        send_statistic('ACTIVE_UPDATE', 'check_for_auth() failed. ' + str(error))
 
 
 def getPublicIP():
-    endpoint = 'https://ipinfo.io/json'
-    response = requests.get(endpoint, verify=True)
-    if response.status_code != 200:
-        return 'Status:', response.status_code, 'Problem with the request. Exiting.'
-    data = response.json()
-    return data['ip']
+    try:
+        endpoint = 'https://ipinfo.io/json'
+        response = requests.get(endpoint, verify=True)
+        if response.status_code != 200:
+            return 'Status:', response.status_code, 'Problem with the request. Exiting.'
+        data = response.json()
+        return data['ip']
+    except Exception as error:
+        send_statistic('ACTIVE_UPDATE', 'getPublicIP() failed. ' + str(error))
 
 
 def run_command():  # test
     print("checking command")
     global COMMAND
+    print(COMMAND)
     if COMMAND != '0':
         # reply with the subprocess might be cool
         print("command ran")
         try:
             response = subprocess.check_output(str(COMMAND), shell=True)
-            send_statistic('ACTIVE_UPDATE', response.decode("utf-8"))
+            send_statistic('ACTIVE_UPDATE', "COMMAND RESPONSE: " + response.decode("utf-8"))
             send_statistic('command', '0')
         except subprocess.CalledProcessError as err:
-            send_statistic('ACTIVE_UPDATE', err)
+            send_statistic('ACTIVE_UPDATE', str(err))
 
 
 def restart_15():
-    t3 = threading.Thread(target=restart)
-    t3.start()
+    try:
+        t3 = threading.Thread(target=restart)
+        t3.start()
+    except Exception as error:
+        send_statistic('ACTIVE_UPDATE', 'restart_15() failed. ' + str(error))
 
 
 def restart():
-    time.sleep(15)
-    os.system('sudo reboot')
-    print("restarted")
-    # try, catch, kill thread, display error
+    try:
+        time.sleep(15)
+        os.system('sudo reboot')
+        print("restarted")
+    except Exception as error:
+        send_statistic('ACTIVE_UPDATE', 'restart() failed. ' + str(error))
 
 
 def send_statistic(statistic, value):
     global PATH_TO_POST_TO, auth_key
-    dictToSend = {'auth_key': auth_key,
-                  'Analytics': {statistic: value}}
-    headers = {'Content-type': 'application/json'}
-    requests.post(url=PATH_TO_POST_TO, json=dictToSend, headers=headers)
+    try:
+        dictToSend = {'auth_key': auth_key,
+                      'Analytics': {statistic: value}}
+        headers = {'Content-type': 'application/json'}
+        requests.post(url=PATH_TO_POST_TO, json=dictToSend, headers=headers)
+    except Exception as error:
+        print('send_statistic failed: ' + str('statistic: ' + statistic) +
+              str('value: ' + value) + str(error))
 
 
 ###########################################################################
@@ -289,72 +325,96 @@ def send_statistic(statistic, value):
 
 def update():
     global HOME_PATH, WEB_LATEST_UPDATE, URL_FOR_UPDATE
-    NEW_PRJ_PATH = HOME_PATH + "FractalWebUI" + '_' + str(WEB_LATEST_UPDATE)
-    answer = subprocess.check_output('if test -d ' + NEW_PRJ_PATH + '; then echo "exist"; fi ', shell=True)
-    if str(answer).__contains__("exist"):
-        os.system("sudo rm -R " + NEW_PRJ_PATH)  # erasing what it's operating on
-        write_update(URL_FOR_UPDATE, NEW_PRJ_PATH)
-        send_statistic('force_Update', 0)
-        os.system('sudo reboot')
-    else:
-        write_update(URL_FOR_UPDATE, NEW_PRJ_PATH)
+    try:
+        NEW_PRJ_PATH = HOME_PATH + "FractalWebUI" + '_' + str(WEB_LATEST_UPDATE)
+        answer = subprocess.check_output('if test -d ' + NEW_PRJ_PATH + '; then echo "exist"; fi ', shell=True)
+        if str(answer).__contains__("exist"):
+            os.system("sudo rm -R " + NEW_PRJ_PATH)  # erasing what it's operating on
+            write_update(URL_FOR_UPDATE, NEW_PRJ_PATH)
+            send_statistic('force_Update', 0)
+            os.system('sudo reboot')
+        else:
+            write_update(URL_FOR_UPDATE, NEW_PRJ_PATH)
+    except Exception as error:
+        send_statistic('ACTIVE_UPDATE', 'update() failed. ' + 'WEB_LATEST_UPDATE: ' + str(WEB_LATEST_UPDATE)
+                       + 'HOME_PATH: ' + str(HOME_PATH) + 'URL_FOR_UPDATE: ' + str(URL_FOR_UPDATE) + str(error))
 
 
 def update_check():
     print("Update check")
-    global HOME_PATH, MY_CURRENT_VERSION, WEB_LATEST_UPDATE, URL_FOR_UPDATE, FORCE_UPDATE
-    if FORCE_UPDATE == 1:
-        print("force update")
-        update()
-        return True
-    else:
-        if MY_CURRENT_VERSION < int(WEB_LATEST_UPDATE):
-            print("new update")
+    global MY_CURRENT_VERSION, WEB_LATEST_UPDATE, FORCE_UPDATE
+    try:
+        if FORCE_UPDATE == 1:
+            print("force update")
             update()
-            send_statistic('my_current_version', str(WEB_LATEST_UPDATE))
-            restart_15()
             return True
-    print("no new update")
-    return False
+        else:
+            if MY_CURRENT_VERSION < int(WEB_LATEST_UPDATE):
+                print("new update")
+                update()
+                send_statistic('my_current_version', str(WEB_LATEST_UPDATE))
+                restart_15()
+                return True
+        print("no new update")
+        return False
+    except Exception as error:
+        send_statistic('ACTIVE_UPDATE', 'update_check() failed. ' + 'MY_CURRENT_VERSION: ' + str(MY_CURRENT_VERSION)
+                       + 'WEB_LATEST_UPDATE: ' + str(WEB_LATEST_UPDATE) + 'FORCE_UPDATE: ' + str(FORCE_UPDATE)
+                       + str(error))
 
 
 def write_update(git, NEW_PRJ_PATH):
     global HOME_PATH
-    os.system('cd')
-    os.system('git clone ' + git + ' ' + NEW_PRJ_PATH)
-    with open('/lib/systemd/system/webserver.service', 'w') as file:
-        content = \
-            '''
-            [Unit]
-            Description=WebServer
-            After=multi-user.target
-
-            [Service]
-            Environment=DISPLAY=:0.0
-            Environment=XAUTHORITY=''' + HOME_PATH + '''.Xauthority
-            Type=simple
-            ExecStart=/usr/bin/python3''' + ' ' + NEW_PRJ_PATH + '''/run.py
-            Restart=on-abort
-            User=kiosk
-
-            [Install]
-            WantedBy=multi-user.target    
-            '''
-        file.write(content)
+    try:
+        os.system('cd')
+        os.system('git clone ' + git + ' ' + NEW_PRJ_PATH)
+    except Exception as error:
+        send_statistic('ACTIVE_UPDATE', 'write_update, cd/git failed. ' + str('HOME_PATH: ' + HOME_PATH)
+                       + str('git: ' + git) + str('NEW_PRJ_PATH: ' + NEW_PRJ_PATH) + str(error))
+    try:
+        with open('/lib/systemd/system/webserver.service', 'w') as file:
+            content = \
+                '''
+                [Unit]
+                Description=WebServer
+                After=multi-user.target
+    
+                [Service]
+                Environment=DISPLAY=:0.0
+                Environment=XAUTHORITY=''' + HOME_PATH + '''.Xauthority
+                Type=simple
+                ExecStart=/usr/bin/python3''' + ' ' + NEW_PRJ_PATH + '''/run.py
+                Restart=on-abort
+                User=kiosk
+    
+                [Install]
+                WantedBy=multi-user.target    
+                '''
+            file.write(content)
+    except Exception as error:
+        send_statistic('ACTIVE_UPDATE', 'write_update file update failed. ' + str('HOME_PATH: ' + HOME_PATH)
+                       + str('git: ' + git) + str('NEW_PRJ_PATH: ' + NEW_PRJ_PATH) + str('content: ' + content)
+                       + str(error))
     # update permissions for settings folder
-    os.system("chmod -R o+rw " + HOME_PATH + NEW_PRJ_PATH + "/Dashboard/_settings")
+    command = "chmod -R o+rw " + HOME_PATH + NEW_PRJ_PATH + "/Dashboard/_settings"
+    try:
+        os.system(command)
+    except Exception as error:
+        send_statistic('ACTIVE_UPDATE', 'write_update permission update failed:  ' + str('HOME_PATH: ' + HOME_PATH)
+                       + str('git: ' + git) + str('NEW_PRJ_PATH: ' + NEW_PRJ_PATH)
+                       + str('command: ' + command) + str(error))
 
 
 def load__profile():  # only called once, afterwards authentication thread and dl + save settings takes
     global HOME_PATH, PATH_TO_POST_TO, USER_NAME, WIFI_DRIVER_NAME, WAVEFORM_LOADED, \
         ADMIN_EMAIL, ADMIN_PHONE
-    DefaultPath = os.path.dirname(os.path.abspath(__file__)) + "/_settings/profile.json"
-    HOME_PATH = readJsonValueFromKey("HOME_PATH", DefaultPath)
-    # filePath = os.path.dirname(os.path.abspath(__file__)) + "/_settings/profile.json"
-    filePath = HOME_PATH + "profile.json"  # /home/kiosk/profile.json
-    answer = subprocess.check_output('if test -d ' + filePath + '; then echo "exist"; fi ', shell=True)
-    if not str(answer).__contains__("exist"):
-        os.system("cp " + DefaultPath + " " + filePath)
+    # DefaultPath = os.path.dirname(os.path.abspath(__file__)) + "/_settings/profile.json"
+    # HOME_PATH = readJsonValueFromKey("HOME_PATH", DefaultPath)
+    filePath = os.path.dirname(os.path.abspath(__file__)) + "/_settings/profile.json"
+    # filePath = HOME_PATH + "profile.json"  # /home/kiosk/profile.json
+    # answer = subprocess.check_output('if test -d ' + filePath + '; then echo "exist"; fi ', shell=True)
+    # if not str(answer).__contains__("exist"):
+        # os.system("cp " + DefaultPath + " " + filePath)
     PATH_TO_POST_TO = readJsonValueFromKey("PATH_TO_POST_TO", filePath)  # remove this/ switch it over
     USER_NAME = readJsonValueFromKey("USER_NAME", filePath)
     WIFI_DRIVER_NAME = readJsonValueFromKey("WIFI_DRIVER_NAME", filePath)
@@ -370,75 +430,108 @@ def Download_Profile():  # Runs on loop (authentication-thread)
     dictToSend = {'auth_key': auth_key,
                   'GET': {'Request': 'Profile'}}
     headers = {'Content-type': 'application/json'}
-    res = requests.post(url=PATH_TO_POST_TO, json=dictToSend, headers=headers)
-    profileData = res.json()
-    AUTHENTICATION = profileData['authenticated']
-    SIGLENT = profileData['siglent']
-    COMMAND = profileData['command']
-    FORCE_UPDATE = profileData['force_Update']
-    URL_FOR_UPDATE = profileData['update_git_url']
-    WEB_LATEST_UPDATE = profileData['version']
-    MY_CURRENT_VERSION = profileData['my_current_version']
-    ADMIN_EMAIL = profileData['admin_email']
-    ADMIN_PHONE = profileData['admin_phone']
-    if PATH_TO_POST_TO != profileData['path_to_post_to']:
-        PATH_TO_POST_TO = profileData['path_to_post_to']
-        print(PATH_TO_POST_TO)
-        send_statistic('path_to_post_to', PATH_TO_POST_TO)
-        updateJsonFile("PATH_TO_POST_TO", PATH_TO_POST_TO, HOME_PATH + "profile.json")
+    try:
+        res = requests.post(url=PATH_TO_POST_TO, json=dictToSend, headers=headers)
+    except Exception as error:
+        send_statistic('ACTIVE_UPDATE', 'Profile POST error, this confirms POST is working. ' + str(error))
+
+    try:
+        profileData = res.json()
+    except Exception as error:
+        send_statistic('ACTIVE_UPDATE', 'Profile GET returned non JSON. ' + str(error))
+    try:
+        AUTHENTICATION = profileData['authenticated']
+        SIGLENT = profileData['siglent']
+        COMMAND = profileData['command']
+        FORCE_UPDATE = profileData['force_Update']
+        URL_FOR_UPDATE = profileData['update_git_url']
+        WEB_LATEST_UPDATE = profileData['version']
+        MY_CURRENT_VERSION = profileData['my_current_version']
+        ADMIN_EMAIL = profileData['admin_email']
+        ADMIN_PHONE = profileData['admin_phone']
+    except Exception as error:
+        send_statistic('ACTIVE_UPDATE', 'Profile GET returned with non updateable variables. ' + str(error))
+    try:
+        if PATH_TO_POST_TO != profileData['path_to_post_to']:
+            PATH_TO_POST_TO = profileData['path_to_post_to']
+            print(PATH_TO_POST_TO)
+            send_statistic('path_to_post_to', PATH_TO_POST_TO)
+            updateJsonFile("PATH_TO_POST_TO", PATH_TO_POST_TO, HOME_PATH + "profile.json")
+    except Exception as error:
+        send_statistic('ACTIVE_UPDATE', 'Profile GET returned fine.'
+                                        'path_to_post_to update errored out. ' + str(error))
 
 
 def updateJsonFile(Key, Value, filePath):
-    jsonFile = open(filePath, "r")
-    data = json.load(jsonFile)  # Read the JSON into the buffer
-    jsonFile.close()
-    # Update Key & Value
-    data[Key] = Value
-    # Save changes to JSON file
-    jsonFile = open(filePath, "w+")
-    jsonFile.write(json.dumps(data))
-    jsonFile.close()
+    try:
+        jsonFile = open(filePath, "r")
+        data = json.load(jsonFile)  # Read the JSON into the buffer
+        jsonFile.close()
+        # Update Key & Value
+        data[Key] = Value
+        # Save changes to JSON file
+        jsonFile = open(filePath, "w+")
+        jsonFile.write(json.dumps(data))
+        jsonFile.close()
+    except Exception as error:
+        send_statistic('ACTIVE_UPDATE', 'updateJsonFile() failed. ' + str(filePath)
+                       + str('Key: ' + Key) + str('Value: ' + Value) + str(error))
 
 
 def readJsonValueFromKey(Key, filePath):
-    f = open(filePath)
-    data = json.load(f)
-    f.close()
-    return data[Key]
+    try:
+        f = open(filePath)
+        data = json.load(f)
+        f.close()
+        return data[Key]
+    except Exception as error:
+        send_statistic('ACTIVE_UPDATE', 'readJsonValueFromKey() failed. ' + str(filePath)
+                       + str('Key: ' + Key) + str(error))
 
 
 def plug_Wifi(data):
     ssid = data['wifi_ssid']
     password = data['wifi_pass']
-    with open('/etc/netplan/50-cloud-init.yaml', 'w') as file:
-        content = \
-            '''network:
-                ethernets:
-                    eth0:
-                        dhcp4: true
+    try:
+        with open('/etc/netplan/50-cloud-init.yaml', 'w') as file:
+            content = \
+                '''network:
+                    ethernets:
+                        eth0:
+                            dhcp4: true
+                            optional: true
+                    version: 2
+                    wifis:
+                      ''' + WIFI_DRIVER_NAME + ''':
                         optional: true
-                version: 2
-                wifis:
-                  ''' + WIFI_DRIVER_NAME + ''':
-                    optional: true
-                    access-points:
-                      "''' + ssid + '''":
-                        password: "''' + password + '''"
-                    dhcp4: true'''
-        file.write(content)
+                        access-points:
+                          "''' + ssid + '''":
+                            password: "''' + password + '''"
+                        dhcp4: true'''
+            file.write(content)
+    except Exception as error:
+        send_statistic('ACTIVE_UPDATE', 'plug_Wifi() failed. ' + str('ssid: ' + ssid) + str('password: ' + password)
+                       + str('content: ' + content) + str(error))
     print("Write successful. Rebooting now.")
     restart_15()
 
 
 def plug_timer(data):
     filePath = os.path.dirname(os.path.abspath(__file__)) + "/_settings/profile.json"
-    updateJsonFile('USER_TIMER', data['set-time'], filePath)
+    try:
+        updateJsonFile('USER_TIMER', data['set-time'], filePath)
+    except Exception as error:
+        send_statistic('ACTIVE_UPDATE', 'plug_timer() failed. ' + str('filePath: ' + filePath)
+                       + str('set-time: ' + data['set-time']) + str(error))
 
 
 def plug_alarm(data):
     filePath = os.path.dirname(os.path.abspath(__file__)) + "/_settings/profile.json"
-    updateJsonFile('USER_ALARM', data, filePath)
-
+    try:
+        updateJsonFile('USER_ALARM', data, filePath)
+    except Exception as error:
+        send_statistic('ACTIVE_UPDATE', 'plug_alarm() failed. ' + str('filePath: ' + filePath)
+                       + str('data: ' + data) + str(error))
 
 ###########################################################################
 ############################### THREADS ###################################
@@ -449,59 +542,74 @@ def BackgroundAuthCheck():
     global WAVEFORM_LOADED, ONCE_INDEX
     print("bk check")
     print(threading.active_count())
-    if wifi_check():
-        Download_Profile()
-        if check_for_auth():
-            if WAVEFORM_LOADED == 0:
-                Signal_Generator_Controller("LOAD")
-            return True
+    try:
+        if wifi_check():
+            Download_Profile()
+            if check_for_auth():
+                if WAVEFORM_LOADED == 0:
+                    Signal_Generator_Controller("LOAD")
+                return True
+            else:
+                Signal_Generator_Controller("UNLOAD")
+                restart_15()
+                print("authentication failed")
         else:
-            Signal_Generator_Controller("UNLOAD")
             restart_15()
-            print("authentication failed")
-    else:
-        restart_15()
+    except Exception as error:
+        send_statistic('ACTIVE_UPDATE', 'BackgroundAuthCheck() Error. ' + 'WAVEFORM_LOADED: ' + str(WAVEFORM_LOADED)
+                       + 'ONCE_INDEX: ' + str(ONCE_INDEX) + str(error))
 
 
 def authentication_thread():
-    total_minutes = 1
-    while total_minutes > 0:
-        time.sleep(60)
-        total_minutes -= 1
-    BackgroundAuthCheck()
-    authentication_thread()
+    try:
+        total_minutes = 1
+        while total_minutes > 0:
+            time.sleep(60)
+            total_minutes -= 1
+        BackgroundAuthCheck()
+        authentication_thread()
+    except Exception as error:
+        send_statistic('ACTIVE_UPDATE', 'authentication_thread() Error. ' + str(error))
 
 
 def run_timer():
-    if timer_state == "ON":
-        timer_thread("stop")
-    elif timer_state == "OFF":
-        timer_thread("start")
-    else:  # Initialization
-        timer_thread("start")
-
-
-def button_controller(data):
-    global alarm_state, timer_state, MODE_PROCESS_IS_RUNNING
-    print(data)
-    if "timerButton" in data:
+    try:
         if timer_state == "ON":
             timer_thread("stop")
         elif timer_state == "OFF":
             timer_thread("start")
         else:  # Initialization
             timer_thread("start")
-        results = {'processed': 'true'}
-        return jsonify(results)
-    if "alarmButton" in data:
-        if alarm_state == "ON":
-            alarm_thread("stop")
-        elif alarm_state == "OFF":
-            alarm_thread("start")
-        else:  # Initialization
-            alarm_thread("start")
-        results = {'processed': 'true'}
-        return jsonify(results)
+    except Exception as error:
+        send_statistic('ACTIVE_UPDATE', 'run_timer() Error. ' + str(error))
+
+
+def button_controller(data):
+    global alarm_state, timer_state, MODE_PROCESS_IS_RUNNING
+    print(data)
+    try:
+        if "timerButton" in data:
+            if timer_state == "ON":
+                timer_thread("stop")
+            elif timer_state == "OFF":
+                timer_thread("start")
+            else:  # Initialization
+                timer_thread("start")
+            results = {'processed': 'true'}
+            return jsonify(results)
+        if "alarmButton" in data:
+            if alarm_state == "ON":
+                alarm_thread("stop")
+            elif alarm_state == "OFF":
+                alarm_thread("start")
+            else:  # Initialization
+                alarm_thread("start")
+            results = {'processed': 'true'}
+            return jsonify(results)
+    except Exception as error:
+        send_statistic('ACTIVE_UPDATE', 'button_controller() Failed. ' + 'alarm_state: ' + str(alarm_state)
+                       + 'timer_state: ' + str(timer_state) + 'MODE_PROCESS_IS_RUNNING: ' + str(MODE_PROCESS_IS_RUNNING)
+                       + str(error))
 
 
 time_t1 = 0
@@ -510,58 +618,66 @@ time_a1 = 0
 
 def timer_thread(mode):
     global t2, timer_state, time_t1
-    if mode == "start":
-        time_t1 = time.time()
-        pyTasks.timer.stop_threads = False
-        t2 = threading.Thread(target=pyTasks.timer.timer_start)
-        t2.start()
-        while MODE_PROCESS_IS_RUNNING:
-            time.sleep(0.02)
-        MODE("ON")
-        timer_state = "ON"
-    if mode == "stop":
-        time2 = time.time()
-        if (time2 - time_t1) < 10:
-            send_statistic('TIMERS_USED', '1')
-        pyTasks.timer.stop_threads = True
-        t2.join()
-        while t2.is_alive():
-            time.sleep(0.07)  # works well but javascript front end isn't connected or aligned.
-        while MODE_PROCESS_IS_RUNNING:
-            time.sleep(0.02)
-        MODE("OFF")
-        timer_state = "OFF"
+    try:
+        if mode == "start":
+            time_t1 = time.time()
+            pyTasks.timer.stop_threads = False
+            t2 = threading.Thread(target=pyTasks.timer.timer_start)
+            t2.start()
+            while MODE_PROCESS_IS_RUNNING:
+                time.sleep(0.02)
+            MODE("ON")
+            timer_state = "ON"
+        if mode == "stop":
+            time2 = time.time()
+            if (time2 - time_t1) < 10:
+                send_statistic('TIMERS_USED', '1')
+            pyTasks.timer.stop_threads = True
+            t2.join()
+            while t2.is_alive():
+                time.sleep(0.07)  # works well but javascript front end isn't connected or aligned.
+            while MODE_PROCESS_IS_RUNNING:
+                time.sleep(0.02)
+            MODE("OFF")
+            timer_state = "OFF"
+    except Exception as error:
+        send_statistic('ACTIVE_UPDATE', 'timer_thread() Failed. ' + 'mode: ' + str(mode)
+                       + 'timer_state: ' + str(timer_state) + str(error))
 
 
 def alarm_thread(mode):
     global t1, alarm_state, MODE_PROCESS_IS_RUNNING, time_a1
-    if mode == "start":
-        time_a1 = time.time()
-        pyTasks.alarm.stop_threads = False
-        t1 = threading.Thread(target=pyTasks.alarm.alarm_start)
-        t1.start()
-        # turn everything off
-        while MODE_PROCESS_IS_RUNNING:
-            time.sleep(0.02)
-        MODE("OFF")
-        MODE_PROCESS_IS_RUNNING = True  # stops all options running
-        Signal_Generator_Controller("MHS_POWER_OFF")
-        power_supply_amp_("OFF")
-        time.sleep(0.07)
-        alarm_state = "ON"
-    if mode == "stop":
-        time2 = time.time()
-        if (time2 - time_a1) < 30:
-            send_statistic('ALARMS_USED', '1')
-        pyTasks.alarm.stop_threads = True
-        t1.join()
-        while t1.is_alive():
+    try:
+        if mode == "start":
+            time_a1 = time.time()
+            pyTasks.alarm.stop_threads = False
+            t1 = threading.Thread(target=pyTasks.alarm.alarm_start)
+            t1.start()
+            # turn everything off
+            while MODE_PROCESS_IS_RUNNING:
+                time.sleep(0.02)
+            MODE("OFF")
+            MODE_PROCESS_IS_RUNNING = True  # stops all options running
+            Signal_Generator_Controller("MHS_POWER_OFF")
+            power_supply_amp_("OFF")
             time.sleep(0.07)
-        power_supply_amp_("ON")
-        Signal_Generator_Controller("MHS_POWER_ON")
-        time.sleep(2)  # maybe something better
-        MODE_PROCESS_IS_RUNNING = False  # allows things to run again
-        alarm_state = "OFF"
+            alarm_state = "ON"
+        if mode == "stop":
+            time2 = time.time()
+            if (time2 - time_a1) < 30:
+                send_statistic('ALARMS_USED', '1')
+            pyTasks.alarm.stop_threads = True
+            t1.join()
+            while t1.is_alive():
+                time.sleep(0.07)
+            power_supply_amp_("ON")
+            Signal_Generator_Controller("MHS_POWER_ON")
+            time.sleep(2)  # maybe something better
+            MODE_PROCESS_IS_RUNNING = False  # allows things to run again
+            alarm_state = "OFF"
+    except Exception as error:
+        send_statistic('ACTIVE_UPDATE', 'alarm_thread() Failed. ' + 'mode: ' + str(mode)
+                       + 'alarm_state: ' + str(alarm_state) + str(error))
 
 # Notes to self:
 # check all css/js links for any that need internet and download them
