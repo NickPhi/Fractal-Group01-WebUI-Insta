@@ -5,8 +5,9 @@ import time
 
 
 def fix():
+    print("started")
+    x = 0
     while True:
-        x = 0
         filePath = "/home/kiosk/FractalWebUI_" + str(x)
         answer = subprocess.check_output('if test -d ' + filePath + '; then echo "exist"; fi ', shell=True)
         if not str(answer).__contains__("exist"):
