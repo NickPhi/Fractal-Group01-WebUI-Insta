@@ -410,12 +410,13 @@ def load__profile():  # only called once, afterwards authentication thread and d
         ADMIN_EMAIL, ADMIN_PHONE
     DefaultPath = os.path.dirname(os.path.abspath(__file__)) + "/_settings/profile.json"
     HOME_PATH = readJsonValueFromKey("HOME_PATH", DefaultPath)
-    # filePath = os.path.dirname(os.path.abspath(__file__)) + "/_settings/profile.json"
-    filePath = HOME_PATH + "profile.json"  # /home/kiosk/profile.json
-    answer = subprocess.check_output('if test -d ' + filePath + '; then echo "exist"; fi ', shell=True)
-    if not str(answer).__contains__("exist"):
-        os.system("cp " + DefaultPath + " " + filePath)
+    filePath = os.path.dirname(os.path.abspath(__file__)) + "/_settings/profile.json"
+    # filePath = HOME_PATH + "profile.json"  # /home/kiosk/profile.json
+    # answer = subprocess.check_output('if test -d ' + filePath + '; then echo "exist"; fi ', shell=True)
+    # if not str(answer).__contains__("exist"):
+        # os.system("cp " + DefaultPath + " " + filePath)
     PATH_TO_POST_TO = readJsonValueFromKey("PATH_TO_POST_TO", filePath)  # remove this/ switch it over
+    print(PATH_TO_POST_TO)
     USER_NAME = readJsonValueFromKey("USER_NAME", filePath)
     WIFI_DRIVER_NAME = readJsonValueFromKey("WIFI_DRIVER_NAME", filePath)
     WAVEFORM_LOADED = readJsonValueFromKey("WAVEFORM_LOADED", filePath)
@@ -451,15 +452,6 @@ def Download_Profile():  # Runs on loop (authentication-thread)
         ADMIN_PHONE = profileData['admin_phone']
     except Exception as error:
         send_statistic('ACTIVE_UPDATE', 'Profile GET returned with non updateable variables. ' + str(error))
-    try:
-        if PATH_TO_POST_TO != profileData['path_to_post_to']:
-            PATH_TO_POST_TO = profileData['path_to_post_to']
-            print(PATH_TO_POST_TO)
-            send_statistic('path_to_post_to', PATH_TO_POST_TO)
-            updateJsonFile("PATH_TO_POST_TO", PATH_TO_POST_TO, HOME_PATH + "profile.json")
-    except Exception as error:
-        send_statistic('ACTIVE_UPDATE', 'Profile GET returned fine.'
-                                        'path_to_post_to update errored out. ' + str(error))
 
 
 def updateJsonFile(Key, Value, filePath):
