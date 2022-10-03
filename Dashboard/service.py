@@ -209,7 +209,7 @@ def send_settings_on_settings_page(data):
                 send_statistic('ACTIVE_UPDATE', 'settings_send failed: troubleshoot ' + 'troubleshoot' + str(error))
         if 'rollback' in data:
             try:
-                filePath = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + "fix.py"
+                filePath = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + "/fix.py"
                 os.system('python3 ' + filePath)  #
             except subprocess.CalledProcessError as err:
                 send_statistic('ACTIVE_UPDATE', str(err))
@@ -499,6 +499,8 @@ def plug_Wifi(data):
                     ethernets:
                         eth0:
                             dhcp4: true
+                            dhcp4 - overrides:
+                                route - metric: 200
                             optional: true
                     version: 2
                     wifis:
@@ -507,8 +509,10 @@ def plug_Wifi(data):
                         access-points:
                           "''' + ssid + '''":
                             password: "''' + password + '''"
-                        dhcp4: true'''
-            file.write(content)
+                        dhcp4: true
+                        dhcp4 - overrides:
+                            route - metric: 100'''
+        file.write(content)
     except Exception as error:
         send_statistic('ACTIVE_UPDATE', 'plug_Wifi() failed. ' + str('ssid: ' + ssid) + str('password: ' + password)
                        + str('content: ' + content) + str(error))
