@@ -222,7 +222,7 @@ def send_settings_on_settings_page(data):
         if 'SiglentIP' in data:
             try:
                 print(data['SiglentIP'])
-                SiglentIP = data['SiglentIP']
+                SiglentIP = str(data['SiglentIP'])
             except Exception as error:
                 send_statistic('ACTIVE_UPDATE', 'settings_send failed: SiglentIP ' + 'SiglentIP'
                                + str(data['SiglentIP']) + str(error))

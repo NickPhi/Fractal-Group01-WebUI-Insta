@@ -20,4 +20,5 @@ import Dashboard.service
 import Dashboard.routes
 import Dashboard.pyTasks.alarm
 import Dashboard.pyTasks.timer
+import Dashboard.pyTasks.siglent
 
