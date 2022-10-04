@@ -626,7 +626,7 @@ def timer_thread(mode):
             timer_state = "ON"
         if mode == "stop":
             time2 = time.time()
-            if (time2 - time_t1) < 10:
+            if (time2 - time_t1) > 10:
                 send_statistic('TIMERS_USED', '1')
             pyTasks.timer.stop_threads = True
             t2.join()
