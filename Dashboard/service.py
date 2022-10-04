@@ -30,6 +30,8 @@ MODE_PROCESS_IS_RUNNING = False
 MODE_STATE = ""
 SiglentIP = ""
 auth_key = 'klshdfgkjh(*&89y(*YF^*&%&RIUHEFIH986893yh4rjfskjdhffhgajkdfni&*%&^^IUJhknfga'
+filePath_private_profile = os.path.dirname(os.path.abspath(__file__)) + "/_settings/private_settings.json"
+filePath_public_profile = os.path.dirname(os.path.abspath(__file__)) + "/_settings/public_settings.json"
 
 
 # GLOBALS
@@ -54,7 +56,7 @@ def start_index():
             print("IP obtained")
             if check_for_auth():  # comes first from the profile  # if profile says 0
                 if WAVEFORM_LOADED == 0:
-                    send_statistic('ACTIVE_UPDATE', 'Signal was not loaded, loading...')
+                    send_statistic('ACTIVE_UPDATE', 'Signal was not loaded, loading. Signal_Generator_Controller(LOAD)')
                     Signal_Generator_Controller("LOAD")
                 if update_check():  # if update do update stuff
                     return "Update"
@@ -128,7 +130,7 @@ def power_supply_amp_(mode):
 
 
 def Signal_Generator_Controller(mode):
-    global POWER_GEN_STATE, HOME_PATH, WAVEFORM_LOADED
+    global filePath_private_profile, POWER_GEN_STATE, HOME_PATH, WAVEFORM_LOADED
     # Relay HIGH is off LOW is on
     if mode == "MHS_POWER_ON":
         os.system('sudo gpioset 1 92=0')
@@ -159,8 +161,7 @@ def Signal_Generator_Controller(mode):
                 'sudo ' + HOME_PATH + 'new-mhs5200a-12-bits/setwave5200 /dev/ttyUSB0 ' + HOME_PATH +
                 '/.local/phi.csv ' + '0')
             time.sleep(.8)
-            updateJsonFile("SIGNAL_IN_GENERATOR_MEMORY", "1",
-                           os.path.dirname(os.path.abspath(__file__)) + "/_settings/profile.json")
+            updateJsonFile("WAVEFORM_LOADED", "1", filePath_private_profile)
     elif mode == "UNLOAD":
         print("unload " + str(WAVEFORM_LOADED))
         if WAVEFORM_LOADED == "1":
@@ -171,9 +172,8 @@ def Signal_Generator_Controller(mode):
                 os.system(
                     'sudo ' + HOME_PATH + 'new-mhs5200a-12-bits/setwave5200 /dev/ttyUSB0 ' + HOME_PATH +
                     '/.local/zero.csv ' + '0')
-                time.sleep(.8)
-                updateJsonFile("SIGNAL_IN_GENERATOR_MEMORY", "0",
-                               os.path.dirname(os.path.abspath(__file__)) + "/_settings/profile.json")
+                time.sleep(0.8)
+                updateJsonFile("WAVEFORM_LOADED", "0", filePath_private_profile)
 
 
 def speaker_protection_(mode):
@@ -274,7 +274,7 @@ def getPublicIP():
         send_statistic('ACTIVE_UPDATE', 'getPublicIP() failed. ' + str(error))
 
 
-def run_command():  # test
+def run_command():
     print("checking command")
     global COMMAND
     print(COMMAND)
@@ -406,22 +406,26 @@ def write_update(git, NEW_PRJ_PATH):
 
 
 def load__profile():  # only called once, afterwards authentication thread and dl + save settings takes
-    global HOME_PATH, PATH_TO_POST_TO, USER_NAME, WIFI_DRIVER_NAME, WAVEFORM_LOADED, \
-        ADMIN_EMAIL, ADMIN_PHONE
-    DefaultPath = os.path.dirname(os.path.abspath(__file__)) + "/_settings/profile.json"
-    HOME_PATH = readJsonValueFromKey("HOME_PATH", DefaultPath)
-    filePath = os.path.dirname(os.path.abspath(__file__)) + "/_settings/profile.json"
-    # filePath = HOME_PATH + "profile.json"  # /home/kiosk/profile.json
-    # answer = subprocess.check_output('if test -d ' + filePath + '; then echo "exist"; fi ', shell=True)
-    # if not str(answer).__contains__("exist"):
-        # os.system("cp " + DefaultPath + " " + filePath)
-    PATH_TO_POST_TO = readJsonValueFromKey("PATH_TO_POST_TO", filePath)  # remove this/ switch it over
-    print(PATH_TO_POST_TO)
-    USER_NAME = readJsonValueFromKey("USER_NAME", filePath)
-    WIFI_DRIVER_NAME = readJsonValueFromKey("WIFI_DRIVER_NAME", filePath)
-    WAVEFORM_LOADED = readJsonValueFromKey("WAVEFORM_LOADED", filePath)
-    ADMIN_EMAIL = readJsonValueFromKey("ADMIN_EMAIL", filePath)
-    ADMIN_PHONE = readJsonValueFromKey("ADMIN_PHONE", filePath)
+    global filePath_public_profile, filePath_private_profile, HOME_PATH, PATH_TO_POST_TO, USER_NAME, WIFI_DRIVER_NAME, \
+        WAVEFORM_LOADED, ADMIN_EMAIL, ADMIN_PHONE
+    HOME_PATH = readJsonValueFromKey("HOME_PATH", filePath_public_profile)  # get home path
+    # if Private Profile not created, create it
+    userPrivateProfile = HOME_PATH + "DashboardSettings.json"  # /home/kiosk/DashboardSettings.json
+    answer = subprocess.check_output('if test -d ' + userPrivateProfile + '; then echo "exist"; fi ', shell=True)
+    if not str(answer).__contains__("exist"):
+        os.system("cp " + filePath_private_profile + " " + userPrivateProfile)
+    # Public Profile
+    PATH_TO_POST_TO = readJsonValueFromKey("PATH_TO_POST_TO", filePath_public_profile)
+    ADMIN_EMAIL = readJsonValueFromKey("ADMIN_EMAIL", filePath_public_profile)
+    ADMIN_PHONE = readJsonValueFromKey("ADMIN_PHONE", filePath_public_profile)
+    # Private Profile
+    USER_NAME = readJsonValueFromKey("USER_NAME", userPrivateProfile)
+    WIFI_DRIVER_NAME = readJsonValueFromKey("WIFI_DRIVER_NAME", userPrivateProfile)
+    WAVEFORM_LOADED = readJsonValueFromKey("WAVEFORM_LOADED", userPrivateProfile)
+    # Private Pofile
+    # USER_NAME = readJsonValueFromKey("USER_NAME", filePath_private_profile)
+    # WIFI_DRIVER_NAME = readJsonValueFromKey("WIFI_DRIVER_NAME", filePath_private_profile)
+    #  WAVEFORM_LOADED = readJsonValueFromKey("WAVEFORM_LOADED", filePath_private_profile)
 
 
 def Download_Profile():  # Runs on loop (authentication-thread)
@@ -513,20 +517,20 @@ def plug_Wifi(data):
 
 
 def plug_timer(data):
-    filePath = os.path.dirname(os.path.abspath(__file__)) + "/_settings/profile.json"
+    global filePath_private_profile
     try:
-        updateJsonFile('USER_TIMER', data['set-time'], filePath)
+        updateJsonFile('USER_TIMER', data['set-time'], filePath_private_profile)
     except Exception as error:
-        send_statistic('ACTIVE_UPDATE', 'plug_timer() failed. ' + str('filePath: ' + filePath)
+        send_statistic('ACTIVE_UPDATE', 'plug_timer() failed. ' + str('filePath: ' + filePath_private_profile)
                        + str('set-time: ' + data['set-time']) + str(error))
 
 
 def plug_alarm(data):
-    filePath = os.path.dirname(os.path.abspath(__file__)) + "/_settings/profile.json"
+    global filePath_private_profile
     try:
-        updateJsonFile('USER_ALARM', data, filePath)
+        updateJsonFile('USER_ALARM', data, filePath_private_profile)
     except Exception as error:
-        send_statistic('ACTIVE_UPDATE', 'plug_alarm() failed. ' + str('filePath: ' + filePath)
+        send_statistic('ACTIVE_UPDATE', 'plug_alarm() failed. ' + str('filePath: ' + filePath_private_profile)
                        + str('data: ' + data) + str(error))
 
 ###########################################################################

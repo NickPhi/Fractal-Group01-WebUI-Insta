@@ -26,8 +26,9 @@ def check(text):
 
 
 def alarm_start():
-    filePath = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '_settings')) + "/profile.json"
-    user_time = readJsonValueFromKey("USER_ALARM", filePath)
+    userPrivateProfile = Dashboard.service.HOME_PATH + "DashboardSettings.json"  # /home/kiosk/DashboardSettings.json
+    # filePath = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '_settings')) + "/public_settings.json"
+    user_time = readJsonValueFromKey("USER_ALARM", userPrivateProfile)
 
     in_time = datetime.strptime(user_time, "%I:%M %p")
     user_time = datetime.strftime(in_time, "%H:%M")
@@ -73,7 +74,7 @@ def alarm_start():
         while MODE_PROCESS_IS_RUNNING:
             time.sleep(0.02)
         MODE("ON")  # for how long
-        time.sleep(float(readJsonValueFromKey("USER_TIMER", filePath)) * 60)
+        time.sleep(float(readJsonValueFromKey("USER_TIMER", userPrivateProfile)) * 60)
         while MODE_PROCESS_IS_RUNNING:
             time.sleep(0.02)
         MODE("OFF")
