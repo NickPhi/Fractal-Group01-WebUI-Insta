@@ -1,7 +1,7 @@
 import Dashboard.service
 from Dashboard import socket, time
 
-remote_ip = Dashboard.service.SiglentIP  # should match the instrument’s IP address
+# remote_ip = Dashboard.service.SiglentIP  # should match the instrument’s IP address
 port = 5024  # the port number of the instrument service
 
 
@@ -14,9 +14,9 @@ def SocketConnect():
         Dashboard.service.SiglentIP = None
     try:
         # Connect to remote server
-        s.connect((remote_ip, port))
+        s.connect((Dashboard.service.SiglentIP, port))
     except socket.error:
-        print('failed to connect to ip ' + remote_ip)
+        print('failed to connect to ip ' + Dashboard.service.SiglentIP)
         Dashboard.service.SiglentIP = None
     return s
 
@@ -36,7 +36,6 @@ def SocketSend(Sock, cmd):
 
 
 def SocketClose(Sock):
-    # close the socket
     Sock.close()
     time.sleep(1)
 
@@ -48,9 +47,6 @@ def SocketClose(Sock):
 
 
 def ON():
-    global remote_ip
-    global port
-
     s = SocketConnect()
     SocketSend(s, b'C1:OUTP ON')  # Set CH1 ON
     SocketClose(s)  # Close socket
@@ -58,9 +54,6 @@ def ON():
 
 
 def OFF():
-    global remote_ip
-    global port
-
     s = SocketConnect()
     SocketSend(s, b'C1:OUTP OFF')
     SocketClose(s)  # Close socket
