@@ -28,9 +28,10 @@ POWER_GEN_STATE = 0
 MODE_PROCESS_IS_RUNNING = False
 MODE_STATE = ""
 SiglentIP = ""
+userPrivateProfile = ""
 auth_key = 'klshdfgkjh(*&89y(*YF^*&%&RIUHEFIH986893yh4rjfskjdhffhgajkdfni&*%&^^IUJhknfga'
-filePath_private_profile = os.path.dirname(os.path.abspath(__file__)) + "/_settings/private_settings.json"
-filePath_public_profile = os.path.dirname(os.path.abspath(__file__)) + "/_settings/public_settings.json"
+filePath_private_settings = os.path.dirname(os.path.abspath(__file__)) + "/_settings/private_settings.json"
+filePath_public_settings = os.path.dirname(os.path.abspath(__file__)) + "/_settings/public_settings.json"
 
 
 # GLOBALS
@@ -126,7 +127,7 @@ def power_supply_amp_(mode):
 
 
 def Signal_Generator_Controller(mode):
-    global filePath_private_profile, POWER_GEN_STATE, HOME_PATH
+    global filePath_private_settings, POWER_GEN_STATE, HOME_PATH
     # Relay HIGH is off LOW is on
     if mode == "MHS_POWER_ON":
         os.system('sudo gpioset 1 92=0')
@@ -388,26 +389,26 @@ def write_update(git, NEW_PRJ_PATH):
 
 
 def load__profile():  # only called once, afterwards authentication thread and dl + save settings takes
-    global filePath_public_profile, filePath_private_profile, HOME_PATH, PATH_TO_POST_TO, USER_NAME, WIFI_DRIVER_NAME, \
+    global filePath_public_settings, userPrivateProfile, filePath_private_settings, HOME_PATH, PATH_TO_POST_TO, USER_NAME, WIFI_DRIVER_NAME, \
          ADMIN_EMAIL, ADMIN_PHONE
-    HOME_PATH = readJsonValueFromKey("HOME_PATH", filePath_public_profile)  # get home path
+    HOME_PATH = readJsonValueFromKey("HOME_PATH", filePath_public_settings)  # get home path
     # if Private Profile not created, create it
     userPrivateProfile = HOME_PATH + "DashboardSettings.json"  # /home/kiosk/DashboardSettings.json
     answer = subprocess.check_output('if test -d ' + userPrivateProfile + '; then echo "exist"; fi ', shell=True)
     if not str(answer).__contains__("exist"):
-        os.system("cp " + filePath_private_profile + " " + userPrivateProfile)
+        os.system("cp " + filePath_private_settings + " " + userPrivateProfile)
     # Public Profile
-    PATH_TO_POST_TO = readJsonValueFromKey("PATH_TO_POST_TO", filePath_public_profile)
+    PATH_TO_POST_TO = readJsonValueFromKey("PATH_TO_POST_TO", filePath_public_settings)
     print(PATH_TO_POST_TO)
-    ADMIN_EMAIL = readJsonValueFromKey("ADMIN_EMAIL", filePath_public_profile)
-    ADMIN_PHONE = readJsonValueFromKey("ADMIN_PHONE", filePath_public_profile)
+    ADMIN_EMAIL = readJsonValueFromKey("ADMIN_EMAIL", filePath_public_settings)
+    ADMIN_PHONE = readJsonValueFromKey("ADMIN_PHONE", filePath_public_settings)
     # Private Profile
     USER_NAME = readJsonValueFromKey("USER_NAME", userPrivateProfile)
     WIFI_DRIVER_NAME = readJsonValueFromKey("WIFI_DRIVER_NAME", userPrivateProfile)
     # Private Pofile
-    # USER_NAME = readJsonValueFromKey("USER_NAME", filePath_private_profile)
+    # USER_NAME = readJsonValueFromKey("USER_NAME", filePath_private_settings)
     # print(USER_NAME)
-    # WIFI_DRIVER_NAME = readJsonValueFromKey("WIFI_DRIVER_NAME", filePath_private_profile)
+    # WIFI_DRIVER_NAME = readJsonValueFromKey("WIFI_DRIVER_NAME", filePath_private_settings)
 
 
 def Download_Profile():  # Runs on loop (authentication-thread)
@@ -502,20 +503,20 @@ def plug_Wifi(data):
 
 
 def plug_timer(data):
-    global filePath_private_profile
+    global userPrivateProfile
     try:
-        updateJsonFile('USER_TIMER', data['set-time'], filePath_private_profile)
+        updateJsonFile('USER_TIMER', data['set-time'], userPrivateProfile)
     except Exception as error:
-        send_statistic('ACTIVE_UPDATE', 'plug_timer() failed. ' + str('filePath: ' + filePath_private_profile)
+        send_statistic('ACTIVE_UPDATE', 'plug_timer() failed. ' + str('filePath: ' + userPrivateProfile)
                        + str('set-time: ' + data['set-time']) + str(error))
 
 
 def plug_alarm(data):
-    global filePath_private_profile
+    global userPrivateProfile
     try:
-        updateJsonFile('USER_ALARM', data, filePath_private_profile)
+        updateJsonFile('USER_ALARM', data, userPrivateProfile)
     except Exception as error:
-        send_statistic('ACTIVE_UPDATE', 'plug_alarm() failed. ' + str('filePath: ' + filePath_private_profile)
+        send_statistic('ACTIVE_UPDATE', 'plug_alarm() failed. ' + str('filePath: ' + userPrivateProfile)
                        + str('data: ' + data) + str(error))
 
 ###########################################################################
