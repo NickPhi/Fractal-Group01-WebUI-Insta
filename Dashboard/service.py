@@ -392,20 +392,22 @@ def load__profile():  # only called once, afterwards authentication thread and d
          ADMIN_EMAIL, ADMIN_PHONE
     HOME_PATH = readJsonValueFromKey("HOME_PATH", filePath_public_profile)  # get home path
     # if Private Profile not created, create it
-    userPrivateProfile = HOME_PATH + "DashboardSettings.json"  # /home/kiosk/DashboardSettings.json
-    answer = subprocess.check_output('if test -d ' + userPrivateProfile + '; then echo "exist"; fi ', shell=True)
-    if not str(answer).__contains__("exist"):
-        os.system("cp " + filePath_private_profile + " " + userPrivateProfile)
+    # userPrivateProfile = HOME_PATH + "DashboardSettings.json"  # /home/kiosk/DashboardSettings.json
+    # answer = subprocess.check_output('if test -d ' + userPrivateProfile + '; then echo "exist"; fi ', shell=True)
+    # if not str(answer).__contains__("exist"):
+        # os.system("cp " + filePath_private_profile + " " + userPrivateProfile)
     # Public Profile
     PATH_TO_POST_TO = readJsonValueFromKey("PATH_TO_POST_TO", filePath_public_profile)
+    print(PATH_TO_POST_TO)
     ADMIN_EMAIL = readJsonValueFromKey("ADMIN_EMAIL", filePath_public_profile)
     ADMIN_PHONE = readJsonValueFromKey("ADMIN_PHONE", filePath_public_profile)
     # Private Profile
-    USER_NAME = readJsonValueFromKey("USER_NAME", userPrivateProfile)
-    WIFI_DRIVER_NAME = readJsonValueFromKey("WIFI_DRIVER_NAME", userPrivateProfile)
+    # USER_NAME = readJsonValueFromKey("USER_NAME", userPrivateProfile)
+    # WIFI_DRIVER_NAME = readJsonValueFromKey("WIFI_DRIVER_NAME", userPrivateProfile)
     # Private Pofile
-    # USER_NAME = readJsonValueFromKey("USER_NAME", filePath_private_profile)
-    # WIFI_DRIVER_NAME = readJsonValueFromKey("WIFI_DRIVER_NAME", filePath_private_profile)
+    USER_NAME = readJsonValueFromKey("USER_NAME", filePath_private_profile)
+    print(USER_NAME)
+    WIFI_DRIVER_NAME = readJsonValueFromKey("WIFI_DRIVER_NAME", filePath_private_profile)
 
 
 def Download_Profile():  # Runs on loop (authentication-thread)
@@ -415,6 +417,7 @@ def Download_Profile():  # Runs on loop (authentication-thread)
     dictToSend = {'auth_key': auth_key,
                   'GET': {'Request': 'Profile'}}
     headers = {'Content-type': 'application/json'}
+    print("headers")
     try:
         res = requests.post(url=PATH_TO_POST_TO, json=dictToSend, headers=headers)
     except Exception as error:
@@ -426,6 +429,8 @@ def Download_Profile():  # Runs on loop (authentication-thread)
         send_statistic('ACTIVE_UPDATE', 'Profile GET returned non JSON. ' + str(error))
     try:
         AUTHENTICATION = profileData['authenticated']
+        print("here")
+        print(AUTHENTICATION)
         SIGLENT = profileData['siglent']
         COMMAND = profileData['command']
         FORCE_UPDATE = profileData['force_Update']
