@@ -91,6 +91,17 @@ def siglent():
             return render_template("siglent.html", invalid="Invalid IP Address, try again.")
 
 
+@app.route('/siglent_settings.html', methods=['GET', 'POST'])
+def siglent_settings():
+    if request.method == 'GET':
+        return render_template("siglent_settings.html")
+    if request.method == 'POST':
+        if 'INVERT' in request.form:
+            pass
+            return render_template('index.html')
+    return render_template('index.html')
+
+
 @app.route('/wifi.html', methods=['GET', 'POST'])
 def wifi():
     if request.method == 'GET':

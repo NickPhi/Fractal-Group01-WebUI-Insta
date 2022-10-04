@@ -147,6 +147,11 @@ def Signal_Generator_Controller(mode):
         # time.sleep(.4) has its own time out
     elif mode == "SIGLENT_OFF":
         pyTasks.siglent.OFF()
+    elif mode == "SIGLENT_INVERT":
+        while MODE_PROCESS_IS_RUNNING:
+            time.sleep(0.02)
+        MODE("OFF")
+        pyTasks.siglent.INVERT()
 
 
 def speaker_protection_(mode):
@@ -180,6 +185,10 @@ def send_settings_on_settings_page(data):
                 # IP address
             except Exception as error:
                 send_statistic('ACTIVE_UPDATE', 'settings_send failed: troubleshoot ' + 'troubleshoot' + str(error))
+        if 'extra_Settings' in data:
+            while MODE_PROCESS_IS_RUNNING:
+                time.sleep(0.02)
+            MODE("OFF")
         if 'rollback' in data:
             try:
                 filePath = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + "/fix.py"
