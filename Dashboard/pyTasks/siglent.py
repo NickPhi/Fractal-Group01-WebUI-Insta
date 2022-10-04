@@ -26,7 +26,7 @@ def SocketSend(Sock, cmd):
         # Send cmd string
         Sock.sendall(cmd)
         Sock.sendall(b'\n')
-        time.sleep(1)
+        time.sleep(0.4)
     except socket.error:
         # Send failed
         print('Send failed')
@@ -37,7 +37,7 @@ def SocketSend(Sock, cmd):
 
 def SocketClose(Sock):
     Sock.close()
-    time.sleep(1)
+    time.sleep(0.4)
 
 
 #################################
@@ -49,6 +49,7 @@ def SocketClose(Sock):
 def ON():
     s = SocketConnect()
     SocketSend(s, b'C1:OUTP ON')  # Set CH1 ON
+    SocketSend(s, b'C2:OUTP ON')  # test
     SocketClose(s)  # Close socket
     print('Query complete.')
 

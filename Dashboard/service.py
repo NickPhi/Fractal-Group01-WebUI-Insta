@@ -13,7 +13,6 @@ USER_NAME = ""
 PATH_TO_POST_TO = ""  # None
 WIFI_DRIVER_NAME = ""
 MY_CURRENT_VERSION = 0
-WAVEFORM_LOADED = 0
 ##### Download from web #####
 ADMIN_EMAIL = ""
 ADMIN_PHONE = ""
@@ -44,7 +43,7 @@ filePath_public_profile = os.path.dirname(os.path.abspath(__file__)) + "/_settin
 
 
 def start_index():
-    global ONCE_INDEX, AUTHENTICATION, WAVEFORM_LOADED, SIGLENT, PATH_TO_POST_TO
+    global ONCE_INDEX, AUTHENTICATION, SIGLENT, PATH_TO_POST_TO
     if ONCE_INDEX == 0:  # have we done this once?
         load__profile()  # load all profile/global variables
         if wifi_check():  # WiFi Check
@@ -55,9 +54,6 @@ def start_index():
             print("profile downloaded")
             print("IP obtained")
             if check_for_auth():  # comes first from the profile  # if profile says 0
-                if WAVEFORM_LOADED == 0:
-                    send_statistic('ACTIVE_UPDATE', 'Signal was not loaded, loading. Signal_Generator_Controller(LOAD)')
-                    Signal_Generator_Controller("LOAD")
                 if update_check():  # if update do update stuff
                     return "Update"
                 threading.Thread(target=authentication_thread).start()  # start authentication loop thread
@@ -70,7 +66,6 @@ def start_index():
                 ONCE_INDEX = "1"  # remember we have already loaded all we need
                 return "Authenticated"
             else:
-                Signal_Generator_Controller("UNLOAD")  # signal generator has to be on
                 restart_15()  # reboot in 15 minutes
                 return "Not-Authenticated"
                 # It will cycle so best to turn itself off than restart
@@ -98,11 +93,12 @@ def MODE(mode):
             if SiglentIP is None:
                 return
             Signal_Generator_Controller("SIGLENT_ON")
+            # maybe want a confirmation this is working before proceeding
         else:
             Signal_Generator_Controller("MHS_ON")  # pass signal generator
-        send_statistic('TOTAL_TIMES_USED', "1")
-        ON_start = time.time()
         speaker_protection_("ON")
+        ON_start = time.time()
+        send_statistic('TOTAL_TIMES_USED', "1")
         MODE_PROCESS_IS_RUNNING = False
     elif mode == "OFF":
         if MODE_PROCESS_IS_RUNNING:
@@ -130,7 +126,7 @@ def power_supply_amp_(mode):
 
 
 def Signal_Generator_Controller(mode):
-    global filePath_private_profile, POWER_GEN_STATE, HOME_PATH, WAVEFORM_LOADED
+    global filePath_private_profile, POWER_GEN_STATE, HOME_PATH
     # Relay HIGH is off LOW is on
     if mode == "MHS_POWER_ON":
         os.system('sudo gpioset 1 92=0')
@@ -148,32 +144,9 @@ def Signal_Generator_Controller(mode):
         time.sleep(.4)
     elif mode == "SIGLENT_ON":
         pyTasks.siglent.ON()
-        time.sleep(.4)
+        # time.sleep(.4) has its own time out
     elif mode == "SIGLENT_OFF":
         pyTasks.siglent.OFF()
-        time.sleep(.4)
-    elif mode == "LOAD":
-        if POWER_GEN_STATE == "0":
-            Signal_Generator_Controller("MHS_POWER_ON")
-            time.sleep(25)
-        else:
-            os.system(
-                'sudo ' + HOME_PATH + 'new-mhs5200a-12-bits/setwave5200 /dev/ttyUSB0 ' + HOME_PATH +
-                '/.local/phi.csv ' + '0')
-            time.sleep(.8)
-            updateJsonFile("WAVEFORM_LOADED", "1", filePath_private_profile)
-    elif mode == "UNLOAD":
-        print("unload " + str(WAVEFORM_LOADED))
-        if WAVEFORM_LOADED == "1":
-            if POWER_GEN_STATE == "0":
-                Signal_Generator_Controller("MHS_POWER_ON")
-                time.sleep(25)
-            else:
-                os.system(
-                    'sudo ' + HOME_PATH + 'new-mhs5200a-12-bits/setwave5200 /dev/ttyUSB0 ' + HOME_PATH +
-                    '/.local/zero.csv ' + '0')
-                time.sleep(0.8)
-                updateJsonFile("WAVEFORM_LOADED", "0", filePath_private_profile)
 
 
 def speaker_protection_(mode):
@@ -192,14 +165,14 @@ def speaker_protection_(mode):
 
 def send_settings_on_settings_page(data):
     global timer_state, alarm_state, ON_start, ON_end, HOME_PATH, USER_NAME, PATH_TO_POST_TO, WIFI_DRIVER_NAME, \
-        MY_CURRENT_VERSION, WAVEFORM_LOADED, ADMIN_EMAIL, ADMIN_PHONE, AUTHENTICATION, COMMAND, SIGLENT, FORCE_UPDATE, \
+        MY_CURRENT_VERSION, ADMIN_EMAIL, ADMIN_PHONE, AUTHENTICATION, COMMAND, SIGLENT, FORCE_UPDATE, \
         URL_FOR_UPDATE, WEB_LATEST_UPDATE, ONCE_INDEX, POWER_GEN_STATE, MODE_PROCESS_IS_RUNNING, MODE_STATE, auth_key, \
         SiglentIP
     try:
         if 'troubleshoot' in data:
             try:
                 message = "    USER_NAME: " + str(USER_NAME) + "    WIFI_DRIVER_NAME: " + str(WIFI_DRIVER_NAME) + \
-                          "    WAVEFORM_LOADED: " + str(WAVEFORM_LOADED) + "    auth_key: " + str(auth_key)
+                          "    auth_key: " + str(auth_key)
                 send_statistic('ACTIVE_UPDATE', message)
                 test_string = "Path= what to send"
                 # file size # sub process lsblk
@@ -407,7 +380,7 @@ def write_update(git, NEW_PRJ_PATH):
 
 def load__profile():  # only called once, afterwards authentication thread and dl + save settings takes
     global filePath_public_profile, filePath_private_profile, HOME_PATH, PATH_TO_POST_TO, USER_NAME, WIFI_DRIVER_NAME, \
-        WAVEFORM_LOADED, ADMIN_EMAIL, ADMIN_PHONE
+         ADMIN_EMAIL, ADMIN_PHONE
     HOME_PATH = readJsonValueFromKey("HOME_PATH", filePath_public_profile)  # get home path
     # if Private Profile not created, create it
     userPrivateProfile = HOME_PATH + "DashboardSettings.json"  # /home/kiosk/DashboardSettings.json
@@ -421,11 +394,9 @@ def load__profile():  # only called once, afterwards authentication thread and d
     # Private Profile
     USER_NAME = readJsonValueFromKey("USER_NAME", userPrivateProfile)
     WIFI_DRIVER_NAME = readJsonValueFromKey("WIFI_DRIVER_NAME", userPrivateProfile)
-    WAVEFORM_LOADED = readJsonValueFromKey("WAVEFORM_LOADED", userPrivateProfile)
     # Private Pofile
     # USER_NAME = readJsonValueFromKey("USER_NAME", filePath_private_profile)
     # WIFI_DRIVER_NAME = readJsonValueFromKey("WIFI_DRIVER_NAME", filePath_private_profile)
-    #  WAVEFORM_LOADED = readJsonValueFromKey("WAVEFORM_LOADED", filePath_private_profile)
 
 
 def Download_Profile():  # Runs on loop (authentication-thread)
@@ -539,25 +510,21 @@ def plug_alarm(data):
 
 
 def BackgroundAuthCheck():
-    global WAVEFORM_LOADED, ONCE_INDEX
+    global ONCE_INDEX
     print("bk check")
     print(threading.active_count())
     try:
         if wifi_check():
             Download_Profile()
             if check_for_auth():
-                if WAVEFORM_LOADED == 0:
-                    Signal_Generator_Controller("LOAD")
                 return True
             else:
-                Signal_Generator_Controller("UNLOAD")
                 restart_15()
                 print("authentication failed")
         else:
             restart_15()
     except Exception as error:
-        send_statistic('ACTIVE_UPDATE', 'BackgroundAuthCheck() Error. ' + 'WAVEFORM_LOADED: ' + str(WAVEFORM_LOADED)
-                       + 'ONCE_INDEX: ' + str(ONCE_INDEX) + str(error))
+        send_statistic('ACTIVE_UPDATE', 'BackgroundAuthCheck() Error. ' + 'ONCE_INDEX: ' + str(ONCE_INDEX) + str(error))
 
 
 def authentication_thread():
@@ -646,7 +613,7 @@ def timer_thread(mode):
 
 
 def alarm_thread(mode):
-    global t1, alarm_state, MODE_PROCESS_IS_RUNNING, time_a1
+    global t1, alarm_state, SIGLENT, MODE_PROCESS_IS_RUNNING, time_a1
     try:
         if mode == "start":
             time_a1 = time.time()
@@ -671,7 +638,8 @@ def alarm_thread(mode):
             while t1.is_alive():
                 time.sleep(0.07)
             power_supply_amp_("ON")
-            Signal_Generator_Controller("MHS_POWER_ON")
+            if SIGLENT == 0:
+                Signal_Generator_Controller("MHS_POWER_ON")
             time.sleep(2)  # maybe something better
             MODE_PROCESS_IS_RUNNING = False  # allows things to run again
             alarm_state = "OFF"
