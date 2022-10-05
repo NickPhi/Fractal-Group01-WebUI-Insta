@@ -394,7 +394,7 @@ def load__profile():  # only called once, afterwards authentication thread and d
     HOME_PATH = readJsonValueFromKey("HOME_PATH", filePath_public_settings)  # get home path
     # if Private Profile not created, create it
     userPrivateProfile = HOME_PATH + "DashboardSettings.json"  # /home/kiosk/DashboardSettings.json
-    answer = subprocess.check_output('if test -d ' + userPrivateProfile + '; then echo "exist"; fi ', shell=True)
+    answer = subprocess.check_output('if test -f ' + userPrivateProfile + '; then echo "exist"; fi ', shell=True)
     if not str(answer).__contains__("exist"):
         os.system("cp " + filePath_private_settings + " " + userPrivateProfile)
     # Public Profile
