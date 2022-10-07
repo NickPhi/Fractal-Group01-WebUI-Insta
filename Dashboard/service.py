@@ -316,7 +316,7 @@ def update():
             os.system("sudo rm -R " + NEW_PRJ_PATH)  # erasing what it's operating on
             write_update(URL_FOR_UPDATE, NEW_PRJ_PATH)
             if FORCE_UPDATE == 1:
-                send_statistic('force_Update', 0)
+                pass
             if MY_CURRENT_VERSION < int(WEB_LATEST_UPDATE):
                 pass
                 # send_statistic('my_current_version', str(WEB_LATEST_UPDATE))
@@ -334,6 +334,7 @@ def update_check():
     try:
         if FORCE_UPDATE == 1:
             print("force update")
+            send_statistic('force_Update', 0)
             update()
             return True
         else:
