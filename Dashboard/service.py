@@ -308,14 +308,18 @@ def send_statistic(statistic, value):
 
 
 def update():
-    global HOME_PATH, WEB_LATEST_UPDATE, URL_FOR_UPDATE
+    global HOME_PATH, WEB_LATEST_UPDATE, URL_FOR_UPDATE, FORCE_UPDATE, MY_CURRENT_VERSION
     try:
         NEW_PRJ_PATH = HOME_PATH + "FractalWebUI" + '_' + str(WEB_LATEST_UPDATE)
         answer = subprocess.check_output('if test -d ' + NEW_PRJ_PATH + '; then echo "exist"; fi ', shell=True)
         if str(answer).__contains__("exist"):
             os.system("sudo rm -R " + NEW_PRJ_PATH)  # erasing what it's operating on
             write_update(URL_FOR_UPDATE, NEW_PRJ_PATH)
-            send_statistic('force_Update', 0)
+            if FORCE_UPDATE == 1:
+                send_statistic('force_Update', 0)
+            if MY_CURRENT_VERSION < int(WEB_LATEST_UPDATE):
+                pass
+                # send_statistic('my_current_version', str(WEB_LATEST_UPDATE))
             os.system('sudo reboot')
         else:
             write_update(URL_FOR_UPDATE, NEW_PRJ_PATH)
@@ -335,8 +339,8 @@ def update_check():
         else:
             if MY_CURRENT_VERSION < int(WEB_LATEST_UPDATE):
                 print("new update")
-                update()
                 send_statistic('my_current_version', str(WEB_LATEST_UPDATE))
+                update()
                 restart_15()
                 return True
         print("no new update")
