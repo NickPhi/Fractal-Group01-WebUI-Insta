@@ -1,27 +1,30 @@
 # File to fix
 import os
 import subprocess
-import time
+
+homePath = '/home/kiosk'
 
 
 def fix():
-    print("started")
-    x = 0
-    while True:
-        filePath = "/home/kiosk/FractalWebUI_" + str(x)
-        answer = subprocess.check_output('if test -d ' + filePath + '; then echo "exist"; fi ', shell=True)
-        if not str(answer).__contains__("exist"):
-            # found highest x that doesn't exist
-            if x == 1:  # remember, 1 wouldn't exist here
-                time.sleep(30)
-                break  # issue, it's found no updates and it is broken
-            resortToBackup(x-1)
-            break
-        x += 1
+    try:
+        print("started")
+        answer = subprocess.check_output('ls ' + homePath, shell=True)
+        s_list = answer.__str__().split('\\n')
+        e_list = []
+        for x in s_list:
+            if x.__contains__('FractalWebUI'):
+                cat = x.split('_')
+                e_list.append(cat[1])
+        print(e_list)
+        e_list.sort()
+        e_list.reverse()  # e_list[0] largest
+        resortToBackup(e_list[0], e_list[1])  # old, new
+    except Exception as error:
+        print(error)
 
 
-def resortToBackup(x):
-    revised = "/home/kiosk/FractalWebUI_" + str(x-1)
+def resortToBackup(old, new):
+    new = homePath + 'FractalWebUI_' + str(new)
     with open('/lib/systemd/system/webserver.service', 'w') as file:
         content = \
             '''
@@ -33,7 +36,7 @@ def resortToBackup(x):
             Environment=DISPLAY=:0.0
             Environment=XAUTHORITY=/home/kiosk.Xauthority
             Type=simple
-            ExecStart=/usr/bin/python3''' + ' ' + revised + '''/run.py
+            ExecStart=/usr/bin/python3''' + ' ' + new + '''/run.py
             Restart=on-abort
             User=kiosk
 
@@ -41,7 +44,7 @@ def resortToBackup(x):
             WantedBy=multi-user.target    
             '''
         file.write(content)
-    old = "/home/kiosk/FractalWebUI_" + str(x)
+    old = homePath + 'FractalWebUI_' + str(old)
     os.system("sudo rm -R " + old)  # remove old update
     os.system("sudo reboot")
 
