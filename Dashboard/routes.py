@@ -1,7 +1,7 @@
 import Dashboard.service
 from Dashboard import app, threading, render_template, request, url_for, redirect, requests, re
 from Dashboard.service import start_index, send_settings_on_settings_page, plug_Wifi, plug_timer, plug_alarm, \
-    button_controller, MODE, alarm_thread, timer_thread
+    button_controller, MODE, alarm_thread, timer_thread, siglent_panel
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -68,38 +68,44 @@ def settings():
         return render_template("settings.html",
                                response=Dashboard.service.ADMIN_EMAIL + " " + Dashboard.service.ADMIN_PHONE)
     if request.method == 'POST':
-        if 'SiglentIP' in request.form:
+        if 'Siglent_panel' in request.form:
             if Dashboard.service.SIGLENT == 1:
-                return render_template('siglent.html')
+                return render_template('siglent_panel.html')
         send_settings_on_settings_page(request.form)
         return render_template('index.html')
 
 
-@app.route('/siglent.html', methods=['GET', 'POST'])
-def siglent():
-    if request.method == 'GET':
-        return render_template("siglent.html")
-    if request.method == 'POST':
-        # confirm IP address
-        regex = "^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$"
-        if re.search(regex, request.form['SiglentIP']):
-            print("Valid Ip address")
-            send_settings_on_settings_page(request.form)
-            return render_template('index.html')
-        else:
-            print("Invalid Ip address")
-            return render_template("siglent.html", invalid="Invalid IP Address, try again.")
+@app.route('/siglentIP.html', methods=['GET', 'POST'])
+def siglentIP():
+    if Dashboard.service.SIGLENT == 1:
+        if request.method == 'GET':
+            return render_template("siglentIP.html")
+        if request.method == 'POST':
+            # confirm IP address
+            regex = "^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$"
+            if re.search(regex, request.form['SiglentIP']):
+                print("Valid Ip address")
+                siglent_panel(request.form)
+                return render_template('index.html')
+            else:
+                print("Invalid Ip address")
+                return render_template("siglentIP.html", invalid="Invalid IP Address, try again.")
+    else:
+        return render_template('index.html')
 
 
-@app.route('/siglent_settings.html', methods=['GET', 'POST'])
-def siglent_settings():
-    if request.method == 'GET':
-        return render_template("siglent_settings.html")
-    if request.method == 'POST':
-        if 'INVERT' in request.form:
-            pass
-            return render_template('index.html')
-    return render_template('index.html')
+@app.route('/siglent_panel.html', methods=['GET', 'POST'])
+def route_siglent_panel():
+    if Dashboard.service.SIGLENT == 1:
+        if request.method == 'GET':
+            return render_template("siglent_panel.html")
+        if request.method == 'POST':
+            if 'INVERT' in request.form:
+                pass
+                return render_template('index.html')
+        return render_template('index.html')
+    else:
+        return render_template('index.html')
 
 
 @app.route('/wifi.html', methods=['GET', 'POST'])

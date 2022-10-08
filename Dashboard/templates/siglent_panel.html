@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Siglent_Settings</title>
+</head>
+<body>
+<button class="button" onclick="location.href='{{ url_for('index') }}';"><strong>BACK BUTTON</strong></button>
+<button class="button" onclick="location.href='{{ url_for('siglentIP') }}';"><strong>Enter IP INFORMATION</strong></button>
+<form action="{{ url_for('route_siglent_panel') }}" method="post">
+    <button class="button" type="submit" name="INVERT"><strong>INVERT</strong></button>
+</form>
+</body>
+</html>

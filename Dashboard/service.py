@@ -173,8 +173,7 @@ def speaker_protection_(mode):
 def send_settings_on_settings_page(data):
     global timer_state, alarm_state, ON_start, ON_end, HOME_PATH, USER_NAME, PATH_TO_POST_TO, WIFI_DRIVER_NAME, \
         MY_CURRENT_VERSION, ADMIN_EMAIL, ADMIN_PHONE, AUTHENTICATION, COMMAND, SIGLENT, FORCE_UPDATE, \
-        URL_FOR_UPDATE, WEB_LATEST_UPDATE, ONCE_INDEX, POWER_GEN_STATE, MODE_PROCESS_IS_RUNNING, MODE_STATE, auth_key, \
-        SiglentIP
+        URL_FOR_UPDATE, WEB_LATEST_UPDATE, ONCE_INDEX, POWER_GEN_STATE, MODE_PROCESS_IS_RUNNING, MODE_STATE, auth_key
     try:
         if 'troubleshoot' in data:
             try:
@@ -203,15 +202,19 @@ def send_settings_on_settings_page(data):
             except Exception as error:
                 send_statistic('ACTIVE_UPDATE', 'settings_send failed: email ' + 'email'
                                + str(data['email']) + str(error))
-        if 'SiglentIP' in data:
-            try:
-                print(data['SiglentIP'])
-                SiglentIP = str(data['SiglentIP'])
-            except Exception as error:
-                send_statistic('ACTIVE_UPDATE', 'settings_send failed: SiglentIP ' + 'SiglentIP'
-                               + str(data['SiglentIP']) + str(error))
     except Exception as error:
         send_statistic('ACTIVE_UPDATE', 'send_settings_on_settings_page() failed: whole thing ' + str(error))
+
+
+def siglent_panel(data):
+    global SiglentIP
+    if 'SiglentIP' in data:
+        try:
+            print(data['SiglentIP'])
+            SiglentIP = str(data['SiglentIP'])
+        except Exception as error:
+            send_statistic('ACTIVE_UPDATE', 'siglent_panel failed: SiglentIP ' + 'SiglentIP'
+                           + str(data['SiglentIP']) + str(error))
 
 
 def wifi_check():
@@ -400,21 +403,21 @@ def load__profile():  # only called once, afterwards authentication thread and d
     HOME_PATH = readJsonValueFromKey("HOME_PATH", filePath_public_settings)  # get home path
     # if Private Profile not created, create it
     userPrivateProfile = HOME_PATH + "DashboardSettings.json"  # /home/kiosk/DashboardSettings.json
-    answer = subprocess.check_output('if test -f ' + userPrivateProfile + '; then echo "exist"; fi ', shell=True)
-    if not str(answer).__contains__("exist"):
-        os.system("cp " + filePath_private_settings + " " + userPrivateProfile)
+    #answer = subprocess.check_output('if test -f ' + userPrivateProfile + '; then echo "exist"; fi ', shell=True)
+    #if not str(answer).__contains__("exist"):
+        #os.system("cp " + filePath_private_settings + " " + userPrivateProfile)
     # Public Profile
     PATH_TO_POST_TO = readJsonValueFromKey("PATH_TO_POST_TO", filePath_public_settings)
     print(PATH_TO_POST_TO)
     ADMIN_EMAIL = readJsonValueFromKey("ADMIN_EMAIL", filePath_public_settings)
     ADMIN_PHONE = readJsonValueFromKey("ADMIN_PHONE", filePath_public_settings)
     # Private Profile
-    USER_NAME = readJsonValueFromKey("USER_NAME", userPrivateProfile)
-    WIFI_DRIVER_NAME = readJsonValueFromKey("WIFI_DRIVER_NAME", userPrivateProfile)
+   # USER_NAME = readJsonValueFromKey("USER_NAME", userPrivateProfile)
+   # WIFI_DRIVER_NAME = readJsonValueFromKey("WIFI_DRIVER_NAME", userPrivateProfile)
     # Private Pofile
-    # USER_NAME = readJsonValueFromKey("USER_NAME", filePath_private_settings)
+    USER_NAME = readJsonValueFromKey("USER_NAME", filePath_private_settings)
     # print(USER_NAME)
-    # WIFI_DRIVER_NAME = readJsonValueFromKey("WIFI_DRIVER_NAME", filePath_private_settings)
+    WIFI_DRIVER_NAME = readJsonValueFromKey("WIFI_DRIVER_NAME", filePath_private_settings)
 
 
 def Download_Profile():  # Runs on loop (authentication-thread)
