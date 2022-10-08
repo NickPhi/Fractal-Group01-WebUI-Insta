@@ -2,7 +2,7 @@
 import os
 import subprocess
 
-homePath = '/home/kiosk'
+homePath = '/home/kiosk/'
 
 
 def fix():
