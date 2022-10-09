@@ -402,13 +402,19 @@ def load__profile():  # only called once, afterwards authentication thread and d
     global filePath_public_settings, userPrivateProfile, filePath_private_settings, HOME_PATH, PATH_TO_POST_TO, USER_NAME, WIFI_DRIVER_NAME, \
          ADMIN_EMAIL, ADMIN_PHONE, SCREEN_HEIGHT
     HOME_PATH = readJsonValueFromKey("HOME_PATH", filePath_public_settings)  # get home path
-    j = 0
+    j = 1
     if j == 1:
         # if Private Profile not created, create it
         userPrivateProfile = HOME_PATH + "DashboardSettings.json"  # /home/kiosk/DashboardSettings.json
         answer = subprocess.check_output('if test -f ' + userPrivateProfile + '; then echo "exist"; fi ', shell=True)
         if not str(answer).__contains__("exist"):
             os.system("cp " + filePath_private_settings + " " + userPrivateProfile)
+        # Put fix in /home/kiosk
+        fixFilePath = HOME_PATH + "fix.py"  # /home/kiosk/fix.py
+        answer = subprocess.check_output('if test -f ' + fixFilePath + '; then echo "exist"; fi ', shell=True)
+        if not str(answer).__contains__("exist"):
+            os.system("cp " + os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + "/fix.py" + " " +
+                      fixFilePath)
     # Public Profile
     PATH_TO_POST_TO = readJsonValueFromKey("PATH_TO_POST_TO", filePath_public_settings)
     print(PATH_TO_POST_TO)
