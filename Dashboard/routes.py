@@ -3,15 +3,19 @@ from Dashboard import app, threading, render_template, request, url_for, redirec
 from Dashboard.service import start_index, send_settings_on_settings_page, plug_Wifi, plug_timer, plug_alarm, \
     button_controller, MODE, alarm_thread, timer_thread, siglent_panel
 
+Y = 0
+
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    global Y
     if request.method == 'GET':
         Status = start_index()
+        Y = Dashboard.service.SCREEN_HEIGHT
         if Status == "Load_Index":
-            return render_template('index.html')
+            return render_template('index.html', screen_height=Y)
         elif Status == "Authenticated":
-            return render_template('index.html')
+            return render_template('index.html', screen_height=Y)
         elif Status == "Not-Authenticated":
             return render_template('payment.html',
                                    response=Dashboard.service.ADMIN_EMAIL + " " + Dashboard.service.ADMIN_PHONE)
@@ -72,7 +76,7 @@ def settings():
             if Dashboard.service.SIGLENT == 1:
                 return render_template('siglent_panel.html')
         send_settings_on_settings_page(request.form)
-        return render_template('index.html')
+        return redirect(url_for('index'))
 
 
 @app.route('/siglentIP.html', methods=['GET', 'POST'])
@@ -86,12 +90,12 @@ def siglentIP():
             if re.search(regex, request.form['SiglentIP']):
                 print("Valid Ip address")
                 siglent_panel(request.form)
-                return render_template('index.html')
+                return redirect(url_for('index'))
             else:
                 print("Invalid Ip address")
                 return render_template("siglentIP.html", invalid="Invalid IP Address, try again.")
     else:
-        return render_template('index.html')
+        return redirect(url_for('index'))
 
 
 @app.route('/siglent_panel.html', methods=['GET', 'POST'])
@@ -102,10 +106,10 @@ def route_siglent_panel():
         if request.method == 'POST':
             if 'INVERT' in request.form:
                 pass
-                return render_template('index.html')
-        return render_template('index.html')
+                return redirect(url_for('index'))
+        return redirect(url_for('index'))
     else:
-        return render_template('index.html')
+        return redirect(url_for('index'))
 
 
 @app.route('/wifi.html', methods=['GET', 'POST'])

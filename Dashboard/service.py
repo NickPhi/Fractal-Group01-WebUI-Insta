@@ -18,6 +18,7 @@ ADMIN_EMAIL = ""
 ADMIN_PHONE = ""
 AUTHENTICATION = 0
 COMMAND = ""
+SCREEN_HEIGHT = 0
 SIGLENT = 0
 FORCE_UPDATE = 0
 URL_FOR_UPDATE = ""
@@ -399,25 +400,27 @@ def write_update(git, NEW_PRJ_PATH):
 
 def load__profile():  # only called once, afterwards authentication thread and dl + save settings takes
     global filePath_public_settings, userPrivateProfile, filePath_private_settings, HOME_PATH, PATH_TO_POST_TO, USER_NAME, WIFI_DRIVER_NAME, \
-         ADMIN_EMAIL, ADMIN_PHONE
+         ADMIN_EMAIL, ADMIN_PHONE, SCREEN_HEIGHT
     HOME_PATH = readJsonValueFromKey("HOME_PATH", filePath_public_settings)  # get home path
     # if Private Profile not created, create it
     userPrivateProfile = HOME_PATH + "DashboardSettings.json"  # /home/kiosk/DashboardSettings.json
-    #answer = subprocess.check_output('if test -f ' + userPrivateProfile + '; then echo "exist"; fi ', shell=True)
-    #if not str(answer).__contains__("exist"):
-        #os.system("cp " + filePath_private_settings + " " + userPrivateProfile)
+    answer = subprocess.check_output('if test -f ' + userPrivateProfile + '; then echo "exist"; fi ', shell=True)
+    if not str(answer).__contains__("exist"):
+        os.system("cp " + filePath_private_settings + " " + userPrivateProfile)
     # Public Profile
     PATH_TO_POST_TO = readJsonValueFromKey("PATH_TO_POST_TO", filePath_public_settings)
     print(PATH_TO_POST_TO)
     ADMIN_EMAIL = readJsonValueFromKey("ADMIN_EMAIL", filePath_public_settings)
     ADMIN_PHONE = readJsonValueFromKey("ADMIN_PHONE", filePath_public_settings)
     # Private Profile
-   # USER_NAME = readJsonValueFromKey("USER_NAME", userPrivateProfile)
-   # WIFI_DRIVER_NAME = readJsonValueFromKey("WIFI_DRIVER_NAME", userPrivateProfile)
+    USER_NAME = readJsonValueFromKey("USER_NAME", userPrivateProfile)
+    SCREEN_HEIGHT = readJsonValueFromKey("SCREEN_HEIGHT", filePath_private_settings)
+    WIFI_DRIVER_NAME = readJsonValueFromKey("WIFI_DRIVER_NAME", userPrivateProfile)
     # Private Pofile
-    USER_NAME = readJsonValueFromKey("USER_NAME", filePath_private_settings)
-    # print(USER_NAME)
-    WIFI_DRIVER_NAME = readJsonValueFromKey("WIFI_DRIVER_NAME", filePath_private_settings)
+    # USER_NAME = readJsonValueFromKey("USER_NAME", filePath_private_settings)
+    # SCREEN_HEIGHT = readJsonValueFromKey("SCREEN_HEIGHT", filePath_private_settings)
+    # print(SCREEN_HEIGHT)
+    # WIFI_DRIVER_NAME = readJsonValueFromKey("WIFI_DRIVER_NAME", filePath_private_settings)
 
 
 def Download_Profile():  # Runs on loop (authentication-thread)
