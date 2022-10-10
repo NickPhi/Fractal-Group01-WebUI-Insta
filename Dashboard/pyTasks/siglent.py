@@ -11,13 +11,13 @@ def SocketConnect():
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     except socket.error:
         print('Failed to create socket.')
-        Dashboard.service.SiglentIP = None
+        Dashboard.service.SiglentIP = ""
     try:
         # Connect to remote server
         s.connect((Dashboard.service.SiglentIP, port))
     except socket.error:
         print('failed to connect to ip ' + Dashboard.service.SiglentIP)
-        Dashboard.service.SiglentIP = None
+        Dashboard.service.SiglentIP = ""
     return s
 
 
@@ -30,7 +30,7 @@ def SocketSend(Sock, cmd):
     except socket.error:
         # Send failed
         print('Send failed')
-        Dashboard.service.SiglentIP = None
+        Dashboard.service.SiglentIP = ""
     # reply = Sock.recv(4096)
     # return reply
 
@@ -74,8 +74,6 @@ def INVERT():
         SocketSend(s, b'C1:OUTP OFF')
         SocketSend(s, b'C2:OUTP OFF')
         SocketSend(s, b'C1:OUTP PLRT,INVT')
-        SocketSend(s, b'C1:OUTP ON')  # Set CH1 ON
-        SocketSend(s, b'C2:OUTP ON')
         SocketClose(s)  # Close socket
         return 'Query complete.'
     except Exception as error:
@@ -88,8 +86,6 @@ def SQR():
         SocketSend(s, b'C1:OUTP OFF')
         SocketSend(s, b'C2:OUTP OFF')
         SocketSend(s, b'C1:OUTP PLRT,INVT')
-        SocketSend(s, b'C1:OUTP ON')  # Set CH1 ON
-        SocketSend(s, b'C2:OUTP ON')
         SocketClose(s)  # Close socket
         return 'Query complete.'
     except Exception as error:

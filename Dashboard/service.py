@@ -86,19 +86,28 @@ def start_index():
 def MODE(mode):
     global SIGLENT, ON_start, ON_end, MODE_PROCESS_IS_RUNNING, MODE_STATE, SiglentIP
     if mode == "ON":
-        if MODE_PROCESS_IS_RUNNING:  # does this eliminate the need for ajax
-            return
         if MODE_STATE == "ON":
-            return
+            return  # IF on already do nothing
+        if MODE_PROCESS_IS_RUNNING:  # does this eliminate the need for ajax
+            return  # currently going through this process, useful for threads
+        ##### Turn things on
         MODE_PROCESS_IS_RUNNING = True
         MODE_STATE = "ON"
+        #####
         if SIGLENT == 1:  # if siglent on then pass siglent signal
-            if SiglentIP is None:
-                return
-            Signal_Generator_Controller("SIGLENT_ON")
-            # maybe want a confirmation this is working before proceeding
-        else:
+            if SiglentIP == "":
+                MODE_PROCESS_IS_RUNNING = False  # confirm stop process
+                MODE_STATE = "OFF"  # was on but now insta off
+                return  # return / do nothing
+            # Process / turn on siglent
+            rtn_ = pyTasks.siglent.ON()
+            if not rtn_ == 'Query complete.':
+                MODE_PROCESS_IS_RUNNING = False  # confirm stop process
+                MODE_STATE = "OFF"  # confirm stop
+                send_statistic('ACTIVE_UPDATE', 'Siglent ON failed' + rtn_)
+        else:  # only two options
             Signal_Generator_Controller("MHS_ON")  # pass signal generator
+        #  Stats final up
         speaker_protection_("ON")
         ON_start = time.time()
         send_statistic('TOTAL_TIMES_USED', "1")
@@ -112,8 +121,11 @@ def MODE(mode):
         send_statistic('MINUTES', run_time)
         print(run_time)
         speaker_protection_("OFF")
+        # ^ stats and stuff
         if SIGLENT == 1:  # if siglent on then pass siglent signal off
-            Signal_Generator_Controller("SIGLENT_OFF")
+            rtn_ = pyTasks.siglent.OFF()
+            if not rtn_ == 'Query complete.':
+                send_statistic('ACTIVE_UPDATE', 'Siglent OFF failed' + rtn_)
         else:
             Signal_Generator_Controller("MHS_OFF")  # pass signal generator off
         MODE_PROCESS_IS_RUNNING = False
@@ -145,25 +157,23 @@ def Signal_Generator_Controller(mode):
         os.system(
             'sudo ' + HOME_PATH + 'MHS-5200-Driver/mhs5200 /dev/ttyUSB0 channel 1 arb 0 amplitude 4 freq 364 off')
         time.sleep(.4)
-    elif mode == "SIGLENT_ON":
-        rtn_ = pyTasks.siglent.ON()
-        if not rtn_ == 'Query complete.':
-            send_statistic('ACTIVE_UPDATE', 'Siglent ON failed' + rtn_)
-        # time.sleep(.4) has its own time out
+    # SIGLENT MODE
     elif mode == "SIGLENT_OFF":
         rtn_ = pyTasks.siglent.OFF()
         if not rtn_ == 'Query complete.':
             send_statistic('ACTIVE_UPDATE', 'Siglent OFF failed' + rtn_)
     elif mode == "SIGLENT_INVERT":
         while MODE_PROCESS_IS_RUNNING:
-            time.sleep(0.02)
-        MODE("OFF")
+            time.sleep(0.02)  # wait till we can turn it off
+        MODE("OFF")  # off now invert
         pyTasks.siglent.INVERT()
+        MODE("ON")
     elif mode == "SIGLENT_SQR":
         while MODE_PROCESS_IS_RUNNING:
             time.sleep(0.02)
-        MODE("OFF")
+        MODE("OFF")  # confirm off
         pyTasks.siglent.SQR()
+        MODE("ON")
 
 
 def speaker_protection_(mode):
