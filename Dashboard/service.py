@@ -540,7 +540,7 @@ def plug_Wifi(data):
                             optional: true
                             access-points:
                                 "''' + ssid + '''":
-                                password: "''' + password + '''"
+                                    password: "''' + password + '''"
                             dhcp4: true
                             dhcp4-overrides:
                                 route-metric: 100'''
