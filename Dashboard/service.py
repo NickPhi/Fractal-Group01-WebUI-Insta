@@ -146,15 +146,26 @@ def Signal_Generator_Controller(mode):
             'sudo ' + HOME_PATH + 'MHS-5200-Driver/mhs5200 /dev/ttyUSB0 channel 1 arb 0 amplitude 4 freq 364 off')
         time.sleep(.4)
     elif mode == "SIGLENT_ON":
-        pyTasks.siglent.ON()
+        try:
+            pyTasks.siglent.ON()
+        except Exception as error:
+            send_statistic('ACTIVE_UPDATE', 'Siglent ON failed' + str(error))
         # time.sleep(.4) has its own time out
     elif mode == "SIGLENT_OFF":
-        pyTasks.siglent.OFF()
+        try:
+            pyTasks.siglent.ON()
+        except Exception as error:
+            send_statistic('ACTIVE_UPDATE', 'Siglent OFF failed' + str(error))
     elif mode == "SIGLENT_INVERT":
         while MODE_PROCESS_IS_RUNNING:
             time.sleep(0.02)
         MODE("OFF")
         pyTasks.siglent.INVERT()
+    elif mode == "SIGLENT_SQR":
+        while MODE_PROCESS_IS_RUNNING:
+            time.sleep(0.02)
+        MODE("OFF")
+        pyTasks.siglent.SQR()
 
 
 def speaker_protection_(mode):
@@ -209,6 +220,7 @@ def send_settings_on_settings_page(data):
 
 def siglent_panel(data):
     global SiglentIP
+    print(data)
     if 'SiglentIP' in data:
         try:
             print(data['SiglentIP'])
@@ -216,6 +228,10 @@ def siglent_panel(data):
         except Exception as error:
             send_statistic('ACTIVE_UPDATE', 'siglent_panel failed: SiglentIP ' + 'SiglentIP'
                            + str(data['SiglentIP']) + str(error))
+    if 'INVERT' in data:
+        pass  # try catch
+    if 'square_wave' in data:
+        pass  # try catch
 
 
 def wifi_check():
@@ -402,7 +418,7 @@ def load__profile():  # only called once, afterwards authentication thread and d
     global filePath_public_settings, userPrivateProfile, filePath_private_settings, HOME_PATH, PATH_TO_POST_TO, USER_NAME, WIFI_DRIVER_NAME, \
          ADMIN_EMAIL, ADMIN_PHONE, SCREEN_HEIGHT
     HOME_PATH = readJsonValueFromKey("HOME_PATH", filePath_public_settings)  # get home path
-    j = 1
+    j = 0
     if j == 1:
         # if Private Profile not created, create it
         userPrivateProfile = HOME_PATH + "DashboardSettings.json"  # /home/kiosk/DashboardSettings.json

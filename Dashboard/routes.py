@@ -72,7 +72,7 @@ def settings():
         return render_template("settings.html",
                                response=Dashboard.service.ADMIN_EMAIL + " " + Dashboard.service.ADMIN_PHONE)
     if request.method == 'POST':
-        if 'Siglent_panel' in request.form:
+        if 'siglent_panel' in request.form:
             if Dashboard.service.SIGLENT == 1:
                 return render_template('siglent_panel.html')
         send_settings_on_settings_page(request.form)
@@ -104,9 +104,7 @@ def route_siglent_panel():
         if request.method == 'GET':
             return render_template("siglent_panel.html")
         if request.method == 'POST':
-            if 'INVERT' in request.form:
-                pass
-                return redirect(url_for('index'))
+            siglent_panel(request.form)
         return redirect(url_for('index'))
     else:
         return redirect(url_for('index'))

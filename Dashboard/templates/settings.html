@@ -15,7 +15,7 @@
     <style>
 .container {
     display: grid;
-    grid-template-columns: 33% 33% 33%;
+    grid-template-columns: 33% 33%;
     row-gap: 4px;
     column-gap: 4px;
 }
@@ -49,7 +49,7 @@
       display: inline-block;
       border: none;
       cursor: grab;
-      width: 33%;
+      width: 10%;
       height:50px
 }
 input[type=text], input[type=password] {
@@ -63,21 +63,26 @@ input[type=text], input[type=password] {
 </style>
 </head>
 <body>
-My phone number and email is {{ response }}
+<b>My phone number and email is {{ response }}</b>
 <br><br>
 <button class="buttonbk" onclick="location.href='{{ url_for('index') }}';"><strong>Go back</strong></button><br><br>
-<form action="{{ url_for('settings') }}" method="post" style="border: 4px solid #ccc;">
-     <h3>Send message to me: </h3><input type="text" id="text" placeholder="Enter text" name="email">
-     <button class="buttonsum" style="width: 33%%;" type="submit"><strong>Send</strong></button>
-    <br><br><br>
-</form><br>
+<form action="{{ url_for('settings') }}" method="post">
+        <div class="container">
+        <button class="button" type="submit" name="troubleshoot"><strong>Send Troubleshoot Information</strong></button>
+        <button class="button" type="submit" name="rollback"><strong>Roll Back to Previous Update</strong></button>
+        </div>
+    <br>
+</form>
+<div class="container">
+<button class="button" onclick="location.href='{{ url_for('route_siglent_panel') }}';"><strong>ADDITIONAL ADD-ON</strong></button>
+</div>
+<h3>Send message to me: </h3>
 <form action="{{ url_for('settings') }}" method="post">
     <div class="container">
-        <button class="button" type="submit" name="troubleshoot"><strong>Send Troubleshoot Information</strong></button>
-        <button class="button" type="submit" name="siglent_panel"><strong>Enter Addon Information</strong></button>
-        <button class="button" type="submit" name="rollback"><strong>Roll Back to Previous Update</strong></button>
-    </div><br>
+     <input type="text" id="text" style="width: 100%;" placeholder="Enter text" name="email">
+     <button class="buttonsum" style="width: 100%;" type="submit"><strong>Send</strong></button>
+    </div>
+    <br><br><br>
 </form>
-<button class="button" onclick="location.href='{{ url_for('route_siglent_panel') }}';"><strong>Extra settings</strong></button>
 </body>
 </html>
