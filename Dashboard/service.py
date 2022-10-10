@@ -426,7 +426,7 @@ def load__profile():  # only called once, afterwards authentication thread and d
     global filePath_public_settings, userPrivateProfile, filePath_private_settings, HOME_PATH, PATH_TO_POST_TO, USER_NAME, WIFI_DRIVER_NAME, \
          ADMIN_EMAIL, ADMIN_PHONE, SCREEN_HEIGHT
     HOME_PATH = readJsonValueFromKey("HOME_PATH", filePath_public_settings)  # get home path
-    j = 0
+    j = 1
     if j == 1:
         # if Private Profile not created, create it
         userPrivateProfile = HOME_PATH + "DashboardSettings.json"  # /home/kiosk/DashboardSettings.json
@@ -541,8 +541,7 @@ def plug_Wifi(data):
                             route - metric: 100'''
         file.write(content)
     except Exception as error:
-        send_statistic('ACTIVE_UPDATE', 'plug_Wifi() failed. ' + str('ssid: ' + ssid) + str('password: ' + password)
-                       + str('content: ' + content) + str(error))
+        print(error)
     print("Write successful. Rebooting now.")
     restart_15()
 
