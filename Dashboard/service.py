@@ -426,7 +426,7 @@ def load__profile():  # only called once, afterwards authentication thread and d
     global filePath_public_settings, userPrivateProfile, filePath_private_settings, HOME_PATH, PATH_TO_POST_TO, USER_NAME, WIFI_DRIVER_NAME, \
          ADMIN_EMAIL, ADMIN_PHONE, SCREEN_HEIGHT
     HOME_PATH = readJsonValueFromKey("HOME_PATH", filePath_public_settings)  # get home path
-    j = 1
+    j = 0
     if j == 1:
         # if Private Profile not created, create it
         userPrivateProfile = HOME_PATH + "DashboardSettings.json"  # /home/kiosk/DashboardSettings.json
@@ -517,8 +517,11 @@ def readJsonValueFromKey(Key, filePath):
 
 
 def plug_Wifi(data):
+    global WIFI_DRIVER_NAME
     ssid = data['wifi_ssid']
     password = data['wifi_pass']
+    print(ssid)
+    print(password)
     try:
         with open('/etc/netplan/50-cloud-init.yaml', 'w') as file:
             content = \
@@ -542,6 +545,7 @@ def plug_Wifi(data):
         file.write(content)
     except Exception as error:
         print(error)
+    print(content)
     print("Write successful. Rebooting now.")
     restart_15()
 
