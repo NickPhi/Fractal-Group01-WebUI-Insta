@@ -426,7 +426,7 @@ def load__profile():  # only called once, afterwards authentication thread and d
     global filePath_public_settings, userPrivateProfile, filePath_private_settings, HOME_PATH, PATH_TO_POST_TO, USER_NAME, WIFI_DRIVER_NAME, \
          ADMIN_EMAIL, ADMIN_PHONE, SCREEN_HEIGHT
     HOME_PATH = readJsonValueFromKey("HOME_PATH", filePath_public_settings)  # get home path
-    j = 1
+    j = 0
     if j == 1:
         # if Private Profile not created, create it
         userPrivateProfile = HOME_PATH + "DashboardSettings.json"  # /home/kiosk/DashboardSettings.json
@@ -547,7 +547,7 @@ def plug_Wifi(data):
         print(error)
     print(content)
     print("Write successful. Rebooting now.")
-    restart_15()
+    #restart_15()
 
 
 def plug_timer(data):
