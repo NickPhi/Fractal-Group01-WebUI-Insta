@@ -200,6 +200,8 @@ def send_settings_on_settings_page(data):
                 message = "    USER_NAME: " + str(USER_NAME) + "    WIFI_DRIVER_NAME: " + str(WIFI_DRIVER_NAME) + \
                           "    auth_key: " + str(auth_key)
                 send_statistic('ACTIVE_UPDATE', message)
+                response = subprocess.check_output('ls ' + str(HOME_PATH), shell=True)
+                send_statistic('ACTIVE_UPDATE', "COMMAND RESPONSE: " + response.decode("utf-8"))
                 test_string = "Path= what to send"
                 # file size # sub process lsblk
                 HDD_size = str(subprocess.check_output('lsblk', shell=True))
@@ -529,19 +531,19 @@ def plug_Wifi(data):
                     ethernets:
                         eth0:
                             dhcp4: true
-                            dhcp4 - overrides:
-                                route - metric: 200
+                            dhcp4-overrides:
+                                route-metric: 200
                             optional: true
                     version: 2
                     wifis:
                         ''' + WIFI_DRIVER_NAME + ''':
-                        optional: true
-                        access-points:
-                            "''' + ssid + '''":
-                            password: "''' + password + '''"
-                        dhcp4: true
-                        dhcp4 - overrides:
-                            route - metric: 100'''
+                            optional: true
+                            access-points:
+                                "''' + ssid + '''":
+                                password: "''' + password + '''"
+                            dhcp4: true
+                            dhcp4-overrides:
+                                route-metric: 100'''
             file.write(content)
     except Exception as error:
         print(error)
