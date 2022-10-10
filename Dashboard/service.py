@@ -146,16 +146,14 @@ def Signal_Generator_Controller(mode):
             'sudo ' + HOME_PATH + 'MHS-5200-Driver/mhs5200 /dev/ttyUSB0 channel 1 arb 0 amplitude 4 freq 364 off')
         time.sleep(.4)
     elif mode == "SIGLENT_ON":
-        try:
-            pyTasks.siglent.ON()
-        except Exception as error:
-            send_statistic('ACTIVE_UPDATE', 'Siglent ON failed' + str(error))
+        rtn_ = pyTasks.siglent.ON()
+        if not rtn_ == 'Query complete.':
+            send_statistic('ACTIVE_UPDATE', 'Siglent ON failed' + rtn_)
         # time.sleep(.4) has its own time out
     elif mode == "SIGLENT_OFF":
-        try:
-            pyTasks.siglent.ON()
-        except Exception as error:
-            send_statistic('ACTIVE_UPDATE', 'Siglent OFF failed' + str(error))
+        rtn_ = pyTasks.siglent.OFF()
+        if not rtn_ == 'Query complete.':
+            send_statistic('ACTIVE_UPDATE', 'Siglent OFF failed' + rtn_)
     elif mode == "SIGLENT_INVERT":
         while MODE_PROCESS_IS_RUNNING:
             time.sleep(0.02)

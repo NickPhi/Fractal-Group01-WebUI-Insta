@@ -47,38 +47,50 @@ def SocketClose(Sock):
 
 
 def ON():
-    s = SocketConnect()
-    SocketSend(s, b'C1:OUTP ON')  # Set CH1 ON
-    SocketSend(s, b'C2:OUTP ON')  # test
-    SocketClose(s)  # Close socket
-    print('Query complete.')
+    try:
+        s = SocketConnect()
+        SocketSend(s, b'C1:OUTP ON')  # Set CH1 ON
+        SocketSend(s, b'C2:OUTP ON')  # test
+        SocketClose(s)  # Close socket
+        return 'Query complete.'
+    except Exception as error:
+        return error.__str__()
 
 
 def OFF():
-    s = SocketConnect()
-    SocketSend(s, b'C1:OUTP OFF')
-    SocketSend(s, b'C2:OUTP OFF')
-    SocketClose(s)  # Close socket
-    print('Query complete.')
+    try:
+        s = SocketConnect()
+        SocketSend(s, b'C1:OUTP OFF')
+        SocketSend(s, b'C2:OUTP OFF')
+        SocketClose(s)  # Close socket
+        return 'Query complete.'
+    except Exception as error:
+        return error.__str__()
 
 
 def INVERT():
-    s = SocketConnect()
-    SocketSend(s, b'C1:OUTP OFF')
-    SocketSend(s, b'C2:OUTP OFF')
-    SocketSend(s, b'C1:OUTP PLRT,INVT')
-    SocketSend(s, b'C1:OUTP ON')  # Set CH1 ON
-    SocketSend(s, b'C2:OUTP ON')
-    SocketClose(s)  # Close socket
-    print('Query complete.')
+    try:
+        s = SocketConnect()
+        SocketSend(s, b'C1:OUTP OFF')
+        SocketSend(s, b'C2:OUTP OFF')
+        SocketSend(s, b'C1:OUTP PLRT,INVT')
+        SocketSend(s, b'C1:OUTP ON')  # Set CH1 ON
+        SocketSend(s, b'C2:OUTP ON')
+        SocketClose(s)  # Close socket
+        return 'Query complete.'
+    except Exception as error:
+        return error.__str__()
 
 
 def SQR():
-    s = SocketConnect()
-    SocketSend(s, b'C1:OUTP OFF')
-    SocketSend(s, b'C2:OUTP OFF')
-    SocketSend(s, b'C1:OUTP PLRT,INVT')
-    SocketSend(s, b'C1:OUTP ON')  # Set CH1 ON
-    SocketSend(s, b'C2:OUTP ON')
-    SocketClose(s)  # Close socket
-    print('Query complete.')
+    try:
+        s = SocketConnect()
+        SocketSend(s, b'C1:OUTP OFF')
+        SocketSend(s, b'C2:OUTP OFF')
+        SocketSend(s, b'C1:OUTP PLRT,INVT')
+        SocketSend(s, b'C1:OUTP ON')  # Set CH1 ON
+        SocketSend(s, b'C2:OUTP ON')
+        SocketClose(s)  # Close socket
+        return 'Query complete.'
+    except Exception as error:
+        return error.__str__()
