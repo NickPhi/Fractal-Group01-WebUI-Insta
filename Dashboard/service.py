@@ -542,12 +542,12 @@ def plug_Wifi(data):
                         dhcp4: true
                         dhcp4 - overrides:
                             route - metric: 100'''
-        file.write(content)
+            file.write(content)
     except Exception as error:
         print(error)
     print(content)
     print("Write successful. Rebooting now.")
-    #restart_15()
+    restart_15()
 
 
 def plug_timer(data):
