@@ -75,8 +75,6 @@ def INVERT():
     global Invert
     try:
         s = SocketConnect()
-        SocketSend(s, b'C2:OUTP OFF')
-        SocketSend(s, b'C1:OUTP OFF')
         if Invert == 0:
             SocketSend(s, b'C1:INVT ON')
             Invert = 1
@@ -90,16 +88,13 @@ def INVERT():
 
 
 def SQR():
+    # frequency has to change
     try:
         s = SocketConnect()
-        SocketSend(s, b'C2:OUTP OFF')
-        SocketSend(s, b'C1:OUTP OFF')
-        SocketSend(s, b'C1:OUTP PLRT,INVT')
+        SocketSend(s, b'C1:BSWV WVTP,SQUARE')
+        SocketSend(s, b'C1:INVT ON')
+        SocketSend(s, b'C2:BSWV WVTP,SQUARE')
         SocketClose(s)  # Close socket
         return 'Query complete.'
     except Exception as error:
         return error.__str__()
-
-
-if __name__ == "__main__":
-    ON()

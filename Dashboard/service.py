@@ -168,12 +168,6 @@ def Signal_Generator_Controller(mode):
         MODE("OFF")  # off now invert
         pyTasks.siglent.INVERT()
         MODE("ON")
-    elif mode == "SIGLENT_SQR":
-        while MODE_PROCESS_IS_RUNNING:
-            time.sleep(0.02)
-        MODE("OFF")  # confirm off
-        pyTasks.siglent.SQR()
-        MODE("ON")
 
 
 def speaker_protection_(mode):
@@ -240,8 +234,6 @@ def siglent_panel(data):
                            + str(data['SiglentIP']) + str(error))
     if 'INVERT' in data:
         Signal_Generator_Controller("SIGLENT_INVERT")
-    if 'square_wave' in data:
-        Signal_Generator_Controller("SIGLENT_SQR")
 
 
 def wifi_check():
