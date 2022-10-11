@@ -62,8 +62,7 @@ def start_index():
                 threading.Thread(target=authentication_thread).start()  # start authentication loop thread
                 power_supply_amp_("ON")  # turn amp on when we authenticate
                 if SIGLENT == 1:  # if siglent on then pass powering signal generator
-                    pass  # cannot control Siglent Device Power state test
-                    # Signal_Generator_Controller("SIGLENT_POWER_ON")
+                    Signal_Generator_Controller("MHS_POWER_ON")  # they use both the same plug
                 else:
                     Signal_Generator_Controller("MHS_POWER_ON")  # turn on signal generator
                 ONCE_INDEX = "1"  # remember we have already loaded all we need
@@ -121,6 +120,7 @@ def MODE(mode):
         send_statistic('MINUTES', run_time)
         print(run_time)
         speaker_protection_("OFF")
+        time.sleep(1)
         # ^ stats and stuff
         if SIGLENT == 1:  # if siglent on then pass siglent signal off
             rtn_ = pyTasks.siglent.OFF()
