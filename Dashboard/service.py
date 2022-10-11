@@ -120,7 +120,7 @@ def MODE(mode):
         send_statistic('MINUTES', run_time)
         print(run_time)
         speaker_protection_("OFF")
-        time.sleep(1)
+        time.sleep(0.37)
         # ^ stats and stuff
         if SIGLENT == 1:  # if siglent on then pass siglent signal off
             rtn_ = pyTasks.siglent.OFF()
@@ -158,10 +158,6 @@ def Signal_Generator_Controller(mode):
             'sudo ' + HOME_PATH + 'MHS-5200-Driver/mhs5200 /dev/ttyUSB0 channel 1 arb 0 amplitude 4 freq 364 off')
         time.sleep(.4)
     # SIGLENT MODE
-    elif mode == "SIGLENT_OFF":
-        rtn_ = pyTasks.siglent.OFF()
-        if not rtn_ == 'Query complete.':
-            send_statistic('ACTIVE_UPDATE', 'Siglent OFF failed' + rtn_)
     elif mode == "SIGLENT_INVERT":
         while MODE_PROCESS_IS_RUNNING:
             time.sleep(0.02)  # wait till we can turn it off
