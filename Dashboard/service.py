@@ -691,9 +691,8 @@ def alarm_thread(mode):
             while t1.is_alive():
                 time.sleep(0.07)
             power_supply_amp_("ON")
-            if SIGLENT == 0:
-                Signal_Generator_Controller("MHS_POWER_ON")
-            time.sleep(2)  # maybe something better
+            Signal_Generator_Controller("MHS_POWER_ON")
+            time.sleep(15)  # maybe something better
             MODE_PROCESS_IS_RUNNING = False  # allows things to run again
             alarm_state = "OFF"
     except Exception as error:
