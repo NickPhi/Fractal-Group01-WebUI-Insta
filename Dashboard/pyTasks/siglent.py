@@ -49,8 +49,8 @@ def SocketClose(Sock):
 def ON():
     try:
         s = SocketConnect()
-        SocketSend(s, b'C1:OUTP ON')  # Set CH1 ON
-        SocketSend(s, b'C2:OUTP ON')  # test
+        SocketSend(s, b'C2:OUTP ON')  # Set CH1 ON
+        SocketSend(s, b'C1:OUTP ON')  # test
         SocketClose(s)  # Close socket
         return 'Query complete.'
     except Exception as error:
@@ -60,20 +60,29 @@ def ON():
 def OFF():
     try:
         s = SocketConnect()
-        SocketSend(s, b'C1:OUTP OFF')
         SocketSend(s, b'C2:OUTP OFF')
+        SocketSend(s, b'C1:OUTP OFF')
         SocketClose(s)  # Close socket
         return 'Query complete.'
     except Exception as error:
         return error.__str__()
 
 
+Invert = 0
+
+
 def INVERT():
+    global Invert
     try:
         s = SocketConnect()
-        SocketSend(s, b'C1:OUTP OFF')
         SocketSend(s, b'C2:OUTP OFF')
-        SocketSend(s, b'C1:OUTP PLRT,INVT')
+        SocketSend(s, b'C1:OUTP OFF')
+        if Invert == 0:
+            SocketSend(s, b'C1:INVT ON')
+            Invert = 1
+        else:
+            SocketSend(s, b'C1:INVT OFF')
+            Invert = 0
         SocketClose(s)  # Close socket
         return 'Query complete.'
     except Exception as error:
@@ -83,10 +92,14 @@ def INVERT():
 def SQR():
     try:
         s = SocketConnect()
-        SocketSend(s, b'C1:OUTP OFF')
         SocketSend(s, b'C2:OUTP OFF')
+        SocketSend(s, b'C1:OUTP OFF')
         SocketSend(s, b'C1:OUTP PLRT,INVT')
         SocketClose(s)  # Close socket
         return 'Query complete.'
     except Exception as error:
         return error.__str__()
+
+
+if __name__ == "__main__":
+    ON()

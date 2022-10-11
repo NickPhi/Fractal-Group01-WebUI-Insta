@@ -201,7 +201,7 @@ def send_settings_on_settings_page(data):
                           "    auth_key: " + str(auth_key)
                 send_statistic('ACTIVE_UPDATE', message)
                 response = subprocess.check_output('ls ' + str(HOME_PATH), shell=True)
-                send_statistic('ACTIVE_UPDATE', "COMMAND RESPONSE: " + response.decode("utf-8"))
+                send_statistic('ACTIVE_UPDATE', "COMMAND ls : " + response.decode("utf-8"))
                 test_string = "Path= what to send"
                 # file size # sub process lsblk
                 HDD_size = str(subprocess.check_output('lsblk', shell=True))
@@ -239,9 +239,9 @@ def siglent_panel(data):
             send_statistic('ACTIVE_UPDATE', 'siglent_panel failed: SiglentIP ' + 'SiglentIP'
                            + str(data['SiglentIP']) + str(error))
     if 'INVERT' in data:
-        pass  # try catch
+        Signal_Generator_Controller("SIGLENT_INVERT")
     if 'square_wave' in data:
-        pass  # try catch
+        Signal_Generator_Controller("SIGLENT_SQR")
 
 
 def wifi_check():

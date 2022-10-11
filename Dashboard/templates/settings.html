@@ -73,9 +73,6 @@ input[type=text], input[type=password] {
         </div>
     <br>
 </form>
-<div class="container">
-<button class="button" onclick="location.href='{{ url_for('route_siglent_panel') }}';"><strong>ADDITIONAL ADD-ON</strong></button>
-</div>
 <h3>Send message to me: </h3>
 <form action="{{ url_for('settings') }}" method="post">
     <div class="container">
@@ -84,5 +81,8 @@ input[type=text], input[type=password] {
     </div>
     <br><br><br>
 </form>
+<div class="container">
+<button class="button" onclick="location.href='{{ url_for('route_siglent_panel') }}';"><strong>ADDITIONAL ADD-ON</strong></button>
+</div>
 </body>
 </html>
