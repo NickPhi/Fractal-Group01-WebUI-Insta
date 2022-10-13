@@ -28,7 +28,7 @@ def check(text):
 
 def alarm_start():
     userPrivateProfile = Dashboard.service.HOME_PATH + "DashboardSettings.json"  # /home/kiosk/DashboardSettings.json
-    userPrivateProfile = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '_settings')) + "/private_settings.json"
+    # userPrivateProfile = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '_settings')) + "/private_settings.json"
     user_time = readJsonValueFromKey("USER_ALARM", userPrivateProfile)
 
     in_time = datetime.strptime(user_time, "%I:%M %p")
