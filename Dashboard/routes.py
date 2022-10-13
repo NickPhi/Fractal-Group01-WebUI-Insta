@@ -76,7 +76,6 @@ def settings():
             if Dashboard.service.SIGLENT == 1:
                 return render_template('siglent_panel.html')
         send_settings_on_settings_page(request.form)
-        return render_template('index')
         return redirect(url_for('index'))
 
 

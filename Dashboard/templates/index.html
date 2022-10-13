@@ -3,7 +3,7 @@
 {% block title %}Home Page{% endblock %}
 
 {% block head %}
-
+<script type="text/javascript" src="{{ url_for('static', filename='js/2.1.3_jquery.min.js') }}"></script>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/popup.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/main_button_style.css') }}">
 <script>
@@ -15,7 +15,7 @@
     r.style.setProperty('--base', he + 'px');
 </script>
 <script>
-var a = {{ local_storage_clear }} ;}
+var a = {{ local_storage_clear }} ;
 if(a==1){localStorage.clear();}
 
 if(localStorage.getItem('state_timer')){}else{localStorage.setItem("state_timer", "Timer Disabled");}

@@ -1,7 +1,8 @@
 import Dashboard.service
 from Dashboard import datetime, time, re, os
-from Dashboard.service import readJsonValueFromKey, MODE, power_supply_amp_, Signal_Generator_Controller,\
+from Dashboard.service import readJsonValueFromKey, MODE, power_supply_amp_, Signal_Generator_Controller, \
     MODE_PROCESS_IS_RUNNING
+
 stop_threads = False
 
 
@@ -27,7 +28,7 @@ def check(text):
 
 def alarm_start():
     userPrivateProfile = Dashboard.service.HOME_PATH + "DashboardSettings.json"  # /home/kiosk/DashboardSettings.json
-    # filePath = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '_settings')) + "/public_settings.json"
+    userPrivateProfile = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '_settings')) + "/private_settings.json"
     user_time = readJsonValueFromKey("USER_ALARM", userPrivateProfile)
 
     in_time = datetime.strptime(user_time, "%I:%M %p")
@@ -64,20 +65,16 @@ def alarm_start():
             if alarm_hour == current_hour:
                 if alarm_min == current_min:
                     if alarm_sec == current_sec:
-                        print("Wake Up!")
+                        power_supply_amp_("ON")
+                        Signal_Generator_Controller("MHS_POWER_ON")
+                        time.sleep(30)  # should ping devices to confirm
+                        Dashboard.service.MODE_RUNNING = False
+                        MODE("ON")  # for how long
+                        while MODE_PROCESS_IS_RUNNING:
+                            time.sleep(0.02)
+                        time.sleep(float(readJsonValueFromKey("USER_TIMER", userPrivateProfile)) * 60)
+                        MODE("OFF")
                         break
-    if not stop_threads:
-        power_supply_amp_("ON")
-        Signal_Generator_Controller("MHS_POWER_ON")
-        time.sleep(30)
-        Dashboard.service.MODE_RUNNING = False
-        while MODE_PROCESS_IS_RUNNING:
-            time.sleep(0.02)
-        MODE("ON")  # for how long
-        time.sleep(float(readJsonValueFromKey("USER_TIMER", userPrivateProfile)) * 60)
-        while MODE_PROCESS_IS_RUNNING:
-            time.sleep(0.02)
-        MODE("OFF")
     print("Alarm stop")
 
 

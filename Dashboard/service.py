@@ -677,7 +677,7 @@ def alarm_thread(mode):
             while MODE_PROCESS_IS_RUNNING:
                 time.sleep(0.02)
             MODE("OFF")
-            MODE_PROCESS_IS_RUNNING = True  # stops all options running
+            MODE_PROCESS_IS_RUNNING = True  # stops all options running since it turns off all power
             Signal_Generator_Controller("MHS_POWER_OFF")
             power_supply_amp_("OFF")
             time.sleep(0.07)
