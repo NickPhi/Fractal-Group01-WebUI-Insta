@@ -1,7 +1,6 @@
 import Dashboard.service
-from Dashboard import datetime, time, re, os
-from Dashboard.service import readJsonValueFromKey, MODE, power_supply_amp_, Signal_Generator_Controller, \
-    MODE_PROCESS_IS_RUNNING
+from Dashboard import datetime, time, re
+from Dashboard.service import readJsonValueFromKey, MODE, power_supply_amp_, Signal_Generator_Controller
 
 stop_threads = False
 
@@ -70,8 +69,6 @@ def alarm_start():
                         time.sleep(30)  # should ping devices to confirm
                         Dashboard.service.MODE_RUNNING = False
                         MODE("ON")  # for how long
-                        while MODE_PROCESS_IS_RUNNING:
-                            time.sleep(0.02)
                         time.sleep(float(readJsonValueFromKey("USER_TIMER", userPrivateProfile)) * 60)
                         MODE("OFF")
                         break

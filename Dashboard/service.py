@@ -47,7 +47,6 @@ filePath_public_settings = os.path.dirname(os.path.abspath(__file__)) + "/_setti
 def start_index():
     global ONCE_INDEX, AUTHENTICATION, SIGLENT, PATH_TO_POST_TO
     if ONCE_INDEX == 0:  # have we done this once?
-        time.sleep(3)
         load__profile()  # load all profile/global variables
         if wifi_check():  # WiFi Check
             Download_Profile()
