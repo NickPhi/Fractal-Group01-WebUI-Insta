@@ -15,7 +15,7 @@ def index():
         if Status == "Load_Index":
             return render_template('index.html', screen_height=Y)
         elif Status == "Authenticated":
-            return render_template('index.html', screen_height=Y)
+            return render_template('index.html', screen_height=Y, local_storage_clear=1)
         elif Status == "Not-Authenticated":
             return render_template('payment.html',
                                    response=Dashboard.service.ADMIN_EMAIL + " " + Dashboard.service.ADMIN_PHONE)
@@ -76,6 +76,7 @@ def settings():
             if Dashboard.service.SIGLENT == 1:
                 return render_template('siglent_panel.html')
         send_settings_on_settings_page(request.form)
+        return render_template('index')
         return redirect(url_for('index'))
 
 
