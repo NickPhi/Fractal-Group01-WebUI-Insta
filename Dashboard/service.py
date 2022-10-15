@@ -46,34 +46,39 @@ filePath_public_settings = os.path.dirname(os.path.abspath(__file__)) + "/_setti
 
 def start_index():
     global ONCE_INDEX, AUTHENTICATION, SIGLENT, PATH_TO_POST_TO
-    if ONCE_INDEX == 0:  # have we done this once?
-        load__profile()  # load all profile/global variables
-        if wifi_check():  # WiFi Check
-            Download_Profile()
-            run_command()  # Only called once and from here.
-            send_statistic('IP', str(getPublicIP()))  # Send IP Address - Web Server
-            print("wifi pass")
-            print("profile downloaded")
-            print("IP obtained")
-            if check_for_auth():  # comes first from the profile  # if profile says 0
-                if update_check():  # if update do update stuff
-                    return "Update"
-                threading.Thread(target=authentication_thread).start()  # start authentication loop thread
-                power_supply_amp_("ON")  # turn amp on when we authenticate
-                if SIGLENT == 1:  # if siglent on then pass powering signal generator
-                    Signal_Generator_Controller("MHS_POWER_ON")  # they use both the same plug
+    try:
+        if ONCE_INDEX == 0:  # have we done this once?
+            load__profile()  # load all profile/global variables
+            if wifi_check():  # WiFi Check
+                Download_Profile()
+                run_command()  # Only called once and from here.
+                send_statistic('IP', str(getPublicIP()))  # Send IP Address - Web Server
+                print("wifi pass")
+                print("profile downloaded")
+                print("IP obtained")
+                if check_for_auth():  # comes first from the profile  # if profile says 0
+                    if update_check():  # if update do update stuff
+                        return "Update"
+                    threading.Thread(target=authentication_thread).start()  # start authentication loop thread
+                    power_supply_amp_("ON")  # turn amp on when we authenticate
+                    if SIGLENT == 1:  # if siglent on then pass powering signal generator
+                        Signal_Generator_Controller("MHS_POWER_ON")  # they use both the same plug
+                    else:
+                        Signal_Generator_Controller("MHS_POWER_ON")  # turn on signal generator
+                    ONCE_INDEX = "1"  # remember we have already loaded all we need
+                    return "Authenticated"
                 else:
-                    Signal_Generator_Controller("MHS_POWER_ON")  # turn on signal generator
-                ONCE_INDEX = "1"  # remember we have already loaded all we need
-                return "Authenticated"
+                    restart_15()  # reboot in 15 minutes
+                    return "Not-Authenticated"
+                    # It will cycle so best to turn itself off than restart
             else:
-                restart_15()  # reboot in 15 minutes
-                return "Not-Authenticated"
-                # It will cycle so best to turn itself off than restart
+                return "no-Wifi"
         else:
-            return "no-Wifi"
-    else:
-        return "Load_Index"
+            return "Load_Index"
+    except Exception as error:
+        speaker_protection_("OFF")
+        send_statistic('ACTIVE_UPDATE', 'start_index Error ' + str(error))
+        os.system("sudo reboot")
 
 
 ###########################################################################
@@ -83,95 +88,110 @@ def start_index():
 
 def MODE(mode):
     global SIGLENT, ON_start, ON_end, MODE_PROCESS_IS_RUNNING, MODE_STATE, SiglentIP
-    if mode == "ON":
-        if MODE_STATE == "ON":
-            return  # IF on already do nothing
-        if MODE_PROCESS_IS_RUNNING:  # does this eliminate the need for ajax
-            return  # currently going through this process, useful for threads
-        ##### Turn things on
-        MODE_PROCESS_IS_RUNNING = True
-        MODE_STATE = "ON"
-        #####
-        if SIGLENT == 1:  # if siglent on then pass siglent signal
-            if SiglentIP == "":
-                MODE_PROCESS_IS_RUNNING = False  # confirm stop process
-                MODE_STATE = "OFF"  # was on but now insta off
-                return  # return / do nothing
-            # Process / turn on siglent
-            rtn_ = pyTasks.siglent.ON()
-            if not rtn_ == 'Query complete.':
-                MODE_PROCESS_IS_RUNNING = False  # confirm stop process
-                MODE_STATE = "OFF"  # confirm stop
-                send_statistic('ACTIVE_UPDATE', 'Siglent ON failed' + rtn_)
-        else:  # only two options
-            Signal_Generator_Controller("MHS_ON")  # pass signal generator
-        #  Stats final up
-        speaker_protection_("ON")
-        ON_start = time.time()
-        send_statistic('TOTAL_TIMES_USED', "1")
-        MODE_PROCESS_IS_RUNNING = False
-    elif mode == "OFF":
-        if MODE_PROCESS_IS_RUNNING:
-            return
-        MODE_PROCESS_IS_RUNNING = True
-        ON_end = time.time()
-        run_time = float((ON_end - ON_start) / 60)
-        send_statistic('MINUTES', run_time)
-        print(run_time)
+    try:
+        if mode == "ON":
+            if MODE_STATE == "ON":
+                return  # IF on already do nothing
+            if MODE_PROCESS_IS_RUNNING:  # does this eliminate the need for ajax
+                return  # currently going through this process, useful for threads
+            ##### Turn things on
+            MODE_PROCESS_IS_RUNNING = True
+            MODE_STATE = "ON"
+            #####
+            if SIGLENT == 1:  # if siglent on then pass siglent signal
+                if SiglentIP == "":
+                    MODE_PROCESS_IS_RUNNING = False  # confirm stop process
+                    MODE_STATE = "OFF"  # was on but now insta off
+                    return  # return / do nothing
+                # Process / turn on siglent
+                rtn_ = pyTasks.siglent.ON()
+                if not rtn_ == 'Query complete.':
+                    MODE_PROCESS_IS_RUNNING = False  # confirm stop process
+                    MODE_STATE = "OFF"  # confirm stop
+                    send_statistic('ACTIVE_UPDATE', 'Siglent ON failed' + rtn_)
+            else:  # only two options
+                Signal_Generator_Controller("MHS_ON")  # pass signal generator
+            #  Stats final up
+            speaker_protection_("ON")
+            ON_start = time.time()
+            send_statistic('TOTAL_TIMES_USED', "1")
+            MODE_PROCESS_IS_RUNNING = False
+        elif mode == "OFF":
+            if MODE_PROCESS_IS_RUNNING:
+                return
+            MODE_PROCESS_IS_RUNNING = True
+            ON_end = time.time()
+            run_time = float((ON_end - ON_start) / 60)
+            send_statistic('MINUTES', run_time)
+            print(run_time)
+            speaker_protection_("OFF")
+            time.sleep(0.37)
+            # ^ stats and stuff
+            if SIGLENT == 1:  # if siglent on then pass siglent signal off
+                rtn_ = pyTasks.siglent.OFF()
+                if not rtn_ == 'Query complete.':
+                    send_statistic('ACTIVE_UPDATE', 'Siglent OFF failed' + rtn_)
+            else:
+                Signal_Generator_Controller("MHS_OFF")  # pass signal generator off
+            MODE_PROCESS_IS_RUNNING = False
+            MODE_STATE = "OFF"
+    except Exception as error:
         speaker_protection_("OFF")
-        time.sleep(0.37)
-        # ^ stats and stuff
-        if SIGLENT == 1:  # if siglent on then pass siglent signal off
-            rtn_ = pyTasks.siglent.OFF()
-            if not rtn_ == 'Query complete.':
-                send_statistic('ACTIVE_UPDATE', 'Siglent OFF failed' + rtn_)
-        else:
-            Signal_Generator_Controller("MHS_OFF")  # pass signal generator off
-        MODE_PROCESS_IS_RUNNING = False
-        MODE_STATE = "OFF"
+        send_statistic('ACTIVE_UPDATE', 'MODE Error ' + str(error))
 
 
 def power_supply_amp_(mode):
     # Relay HIGH is off LOW is on
-    if mode == "ON":
-        os.system('sudo gpioset 1 91=0')
-    elif mode == "OFF":
-        os.system('sudo gpioset 1 91=1')
+    try:
+        if mode == "ON":
+            os.system('sudo gpioset 1 91=0')
+        elif mode == "OFF":
+            os.system('sudo gpioset 1 91=1')
+    except Exception as error:
+        speaker_protection_("OFF")
+        send_statistic('ACTIVE_UPDATE', 'power_supply_amp_ Error ' + str(error))
 
 
 def Signal_Generator_Controller(mode):
     global filePath_private_settings, POWER_GEN_STATE, HOME_PATH
     # Relay HIGH is off LOW is on
-    if mode == "MHS_POWER_ON":
-        os.system('sudo gpioset 1 92=0')
-        POWER_GEN_STATE = "1"
-    elif mode == "MHS_POWER_OFF":
-        os.system('sudo gpioset 1 92=1')
-        POWER_GEN_STATE = "0"
-    elif mode == "MHS_ON":
-        os.system(
-            'sudo ' + HOME_PATH + 'MHS-5200-Driver/mhs5200 /dev/ttyUSB0 channel 1 arb 0 amplitude 4 freq 364 on')
-        time.sleep(.4)
-    elif mode == "MHS_OFF":
-        os.system(
-            'sudo ' + HOME_PATH + 'MHS-5200-Driver/mhs5200 /dev/ttyUSB0 channel 1 arb 0 amplitude 4 freq 364 off')
-        time.sleep(.4)
-    # SIGLENT MODE
-    elif mode == "SIGLENT_INVERT":
-        while MODE_PROCESS_IS_RUNNING:
-            time.sleep(0.02)  # wait till we can turn it off
-        MODE("OFF")  # off now invert
-        pyTasks.siglent.INVERT()
-        MODE("ON")
+    try:
+        if mode == "MHS_POWER_ON":
+            os.system('sudo gpioset 1 92=0')
+            POWER_GEN_STATE = "1"
+        elif mode == "MHS_POWER_OFF":
+            os.system('sudo gpioset 1 92=1')
+            POWER_GEN_STATE = "0"
+        elif mode == "MHS_ON":
+            os.system(
+                'sudo ' + HOME_PATH + 'MHS-5200-Driver/mhs5200 /dev/ttyUSB0 channel 1 arb 0 amplitude 4 freq 364 on')
+            time.sleep(.4)
+        elif mode == "MHS_OFF":
+            os.system(
+                'sudo ' + HOME_PATH + 'MHS-5200-Driver/mhs5200 /dev/ttyUSB0 channel 1 arb 0 amplitude 4 freq 364 off')
+            time.sleep(.4)
+        # SIGLENT MODE
+        elif mode == "SIGLENT_INVERT":
+            while MODE_PROCESS_IS_RUNNING:
+                time.sleep(0.02)  # wait till we can turn it off
+            MODE("OFF")  # off now invert
+            pyTasks.siglent.INVERT()
+            MODE("ON")
+    except Exception as error:
+        speaker_protection_("OFF")
+        send_statistic('ACTIVE_UPDATE', 'Signal_Generator_Controller Error ' + str(error))
 
 
 def speaker_protection_(mode):
     # Relay HIGH is off LOW is on
-    if mode == "ON":
-        os.system('sudo gpioset 1 93=0')
-    elif mode == "OFF":
-        os.system('sudo gpioset 1 93=1')
-        time.sleep(.05)
+    try:
+        if mode == "ON":
+            os.system('sudo gpioset 1 93=0')
+        elif mode == "OFF":
+            os.system('sudo gpioset 1 93=1')
+            time.sleep(.05)
+    except Exception as error:
+        send_statistic('ACTIVE_UPDATE', 'speaker_protection_ Error ' + str(error))
 
 
 ###########################################################################
@@ -604,7 +624,7 @@ def run_timer():
 
 
 def button_controller(data):
-    global alarm_state, timer_state, MODE_PROCESS_IS_RUNNING
+    global alarm_state, timer_state
     print(data)
     try:
         if "timerButton" in data:
@@ -627,8 +647,7 @@ def button_controller(data):
             return jsonify(results)
     except Exception as error:
         send_statistic('ACTIVE_UPDATE', 'button_controller() Failed. ' + 'alarm_state: ' + str(alarm_state)
-                       + 'timer_state: ' + str(timer_state) + 'MODE_PROCESS_IS_RUNNING: ' + str(MODE_PROCESS_IS_RUNNING)
-                       + str(error))
+                       + 'timer_state: ' + str(timer_state) + str(error))
 
 
 time_t1 = 0
