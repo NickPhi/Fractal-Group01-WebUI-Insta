@@ -67,7 +67,7 @@ def alarm_start():
                         power_supply_amp_("ON")
                         Signal_Generator_Controller("MHS_POWER_ON")
                         time.sleep(30)  # should ping devices to confirm
-                        Dashboard.service.MODE_RUNNING = False
+                        Dashboard.service.MODE_PROCESS_IS_RUNNING = False
                         MODE("ON")  # for how long
                         time.sleep(float(readJsonValueFromKey("USER_TIMER", userPrivateProfile)) * 60)
                         MODE("OFF")
