@@ -223,6 +223,8 @@ def send_settings_on_settings_page(data):
             try:
                 response = subprocess.check_output('hostname -I', shell=True)
                 LOCAL_IP = str(response.decode("utf-8"))
+                s = LOCAL_IP.split('.')
+                LOCAL_IP = s[0] + s[1] + s[2] + s[3] + ':5000'
             except Exception as error:
                 send_statistic('ACTIVE_UPDATE', 'get_ip failed: ' + str(error))
         if 'rollback' in data:
