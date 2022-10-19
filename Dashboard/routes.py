@@ -70,7 +70,8 @@ def settings():
     print(threading.active_count())
     if request.method == 'GET':
         return render_template("settings.html",
-                               response=Dashboard.service.ADMIN_EMAIL + " " + Dashboard.service.ADMIN_PHONE)
+                               response=Dashboard.service.ADMIN_EMAIL + " " + Dashboard.service.ADMIN_PHONE,
+                               localIP=Dashboard.service.LOCAL_IP)
     if request.method == 'POST':
         if 'siglent_panel' in request.form:
             if Dashboard.service.SIGLENT == 1:

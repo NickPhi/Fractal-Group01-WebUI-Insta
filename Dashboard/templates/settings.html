@@ -64,12 +64,14 @@ input[type=text], input[type=password] {
 </style>
 </head>
 <body>
+<p></p><button class="buttonbk" onclick="location.href='{{ url_for('index') }}';"><strong>Go back</strong></button></p>
+<br>
 <b>My phone number and email is {{ response }}</b>
-<br><br>
-<button class="buttonbk" onclick="location.href='{{ url_for('index') }}';"><strong>Go back</strong></button><br><br>
+<p>Your local IP is: {{ localIP }}</p><br>
 <form action="{{ url_for('settings') }}" method="post">
         <div class="container">
         <button class="button" type="submit" name="troubleshoot"><strong>Send Troubleshoot Information</strong></button>
+        <button class="button" type="submit" name="get_ip"><strong>Get IP</strong></button>
         <button class="button" type="submit" name="rollback"><strong>Roll Back to Previous Update</strong></button>
         </div>
     <br>

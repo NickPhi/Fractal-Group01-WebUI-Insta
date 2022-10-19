@@ -29,6 +29,7 @@ POWER_GEN_STATE = 0
 MODE_PROCESS_IS_RUNNING = False
 MODE_STATE = ""
 SiglentIP = ""
+LOCAL_IP = ""
 userPrivateProfile = ""
 auth_key = 'klshdfgkjh(*&89y(*YF^*&%&RIUHEFIH986893yh4rjfskjdhffhgajkdfni&*%&^^IUJhknfga'
 filePath_private_settings = os.path.dirname(os.path.abspath(__file__)) + "/_settings/private_settings.json"
@@ -202,7 +203,8 @@ def speaker_protection_(mode):
 def send_settings_on_settings_page(data):
     global timer_state, alarm_state, ON_start, ON_end, HOME_PATH, USER_NAME, PATH_TO_POST_TO, WIFI_DRIVER_NAME, \
         MY_CURRENT_VERSION, ADMIN_EMAIL, ADMIN_PHONE, AUTHENTICATION, COMMAND, SIGLENT, FORCE_UPDATE, \
-        URL_FOR_UPDATE, WEB_LATEST_UPDATE, ONCE_INDEX, POWER_GEN_STATE, MODE_PROCESS_IS_RUNNING, MODE_STATE, auth_key
+        URL_FOR_UPDATE, WEB_LATEST_UPDATE, ONCE_INDEX, POWER_GEN_STATE, MODE_PROCESS_IS_RUNNING, MODE_STATE, \
+        auth_key, LOCAL_IP
     try:
         if 'troubleshoot' in data:
             try:
@@ -217,10 +219,12 @@ def send_settings_on_settings_page(data):
                 # IP address
             except Exception as error:
                 send_statistic('ACTIVE_UPDATE', 'settings_send failed: troubleshoot ' + 'troubleshoot' + str(error))
-        if 'extra_Settings' in data:
-            while MODE_PROCESS_IS_RUNNING:
-                time.sleep(0.02)
-            MODE("OFF")
+        if 'get_ip' in data:
+            try:
+                response = subprocess.check_output('hostname -I', shell=True)
+                LOCAL_IP = str(response.decode("utf-8"))
+            except Exception as error:
+                send_statistic('ACTIVE_UPDATE', 'get_ip failed: ' + str(error))
         if 'rollback' in data:
             try:
                 filePath = os.path.abspath(os.path.join(os.path.dirname(__file__), '..')) + "/fix.py"
@@ -352,11 +356,6 @@ def update():
         if str(answer).__contains__("exist"):
             os.system("sudo rm -R " + NEW_PRJ_PATH)  # erasing what it's operating on
             write_update(URL_FOR_UPDATE, NEW_PRJ_PATH)
-            if FORCE_UPDATE == 1:
-                pass
-            if MY_CURRENT_VERSION < int(WEB_LATEST_UPDATE):
-                pass
-                # send_statistic('my_current_version', str(WEB_LATEST_UPDATE))
             os.system('sudo reboot')
         else:
             write_update(URL_FOR_UPDATE, NEW_PRJ_PATH)
@@ -373,6 +372,7 @@ def update_check():
             print("force update")
             send_statistic('force_Update', 0)
             update()
+            restart_15()
             return True
         else:
             if MY_CURRENT_VERSION < int(WEB_LATEST_UPDATE):
@@ -436,7 +436,7 @@ def load__profile():  # only called once, afterwards authentication thread and d
          ADMIN_EMAIL, ADMIN_PHONE, SCREEN_HEIGHT
     HOME_PATH = readJsonValueFromKey("HOME_PATH", filePath_public_settings)  # get home path
     userPrivateProfile = HOME_PATH + "DashboardSettings.json"  # /home/kiosk/DashboardSettings.json
-    j = 1
+    j = 0
     if j == 1:
         # if Private Profile not created, create it
         answer = subprocess.check_output('if test -f ' + userPrivateProfile + '; then echo "exist"; fi ', shell=True)
@@ -494,8 +494,21 @@ def Download_Profile():  # Runs on loop (authentication-thread)
         MY_CURRENT_VERSION = profileData['my_current_version']
         ADMIN_EMAIL = profileData['admin_email']
         ADMIN_PHONE = profileData['admin_phone']
+
+        checkForRolledBack()
     except Exception as error:
         send_statistic('ACTIVE_UPDATE', 'Profile GET returned with non updateable variables. ' + str(error))
+
+
+def checkForRolledBack():
+    global HOME_PATH, WEB_LATEST_UPDATE
+    try:
+        NEW_PRJ_PATH = HOME_PATH + "FractalWebUI" + '_' + str(WEB_LATEST_UPDATE)
+        answer = subprocess.check_output('if test -d ' + NEW_PRJ_PATH + '; then echo "exist"; fi ', shell=True)
+        if not str(answer).__contains__("exist"):
+            send_statistic('ACTIVE_UPDATE', 'likely rolled back can check with command')
+    except Exception as error:
+        send_statistic('ACTIVE_UPDATE', 'checkForRolledBack() error ' + HOME_PATH + str(error))
 
 
 def updateJsonFile(Key, Value, filePath):
@@ -556,6 +569,7 @@ def plug_Wifi(data):
         print(error)
     print(content)
     print("Write successful. Rebooting now.")
+    # os.system('sudo netplan apply')  # eh, that means need to reload index
     restart_15()
 
 
