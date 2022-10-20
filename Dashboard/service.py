@@ -60,6 +60,7 @@ def start_index():
                 if check_for_auth():  # comes first from the profile  # if profile says 0
                     if update_check():  # if update do update stuff
                         return "Update"
+                    checkForRolledBack()  # simple fix to document to me if a rollback occurred
                     threading.Thread(target=authentication_thread).start()  # start authentication loop thread
                     power_supply_amp_("ON")  # turn amp on when we authenticate
                     if SIGLENT == 1:  # if siglent on then pass powering signal generator
@@ -222,9 +223,7 @@ def send_settings_on_settings_page(data):
         if 'get_ip' in data:
             try:
                 response = subprocess.check_output('hostname -I', shell=True)
-                LOCAL_IP = str(response.decode("utf-8"))
-                s = LOCAL_IP.split('.')
-                LOCAL_IP = s[0] + '.' + s[1] + '.' + s[2] + ':5000'
+                LOCAL_IP = str(response.decode("utf-8")) + ':5000'
             except Exception as error:
                 send_statistic('ACTIVE_UPDATE', 'get_ip failed: ' + str(error))
         if 'rollback' in data:
@@ -496,8 +495,6 @@ def Download_Profile():  # Runs on loop (authentication-thread)
         MY_CURRENT_VERSION = profileData['my_current_version']
         ADMIN_EMAIL = profileData['admin_email']
         ADMIN_PHONE = profileData['admin_phone']
-
-        checkForRolledBack()
     except Exception as error:
         send_statistic('ACTIVE_UPDATE', 'Profile GET returned with non updateable variables. ' + str(error))
 
